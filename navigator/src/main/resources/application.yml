@@ -1,0 +1,28 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: NavigatorAppMail@gmail.com
+    password: tgrkptvotyffknxx
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    baselineOnMigrate: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/navigator_app_db
+    username: postgres
+    password: postgretest
+  jpa:
+    show-sql: true
+    format_sql: true
+    hibernate.ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        connection pool_size: 10
