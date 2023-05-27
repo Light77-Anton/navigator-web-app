@@ -23,4 +23,6 @@ public class RequestForEmployees {
     private byte isAuto;
     @JsonProperty("language")
     private String languageName;
+    @JsonProperty("are_languages_match")
+    private byte areLanguagesMatch;
 }

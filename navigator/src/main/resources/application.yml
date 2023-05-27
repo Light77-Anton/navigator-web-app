@@ -15,13 +15,13 @@ spring:
     locations: classpath:db/migration
     baselineOnMigrate: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/navigator_app_db
+    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=navigator_app_db
     username: postgres
     password: postgretest
   jpa:
     show-sql: true
     format_sql: true
-    hibernate.ddl-auto: create
+    hibernate.ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

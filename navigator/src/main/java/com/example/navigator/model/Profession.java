@@ -2,7 +2,7 @@ package com.example.navigator.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -18,13 +18,13 @@ public class Profession {
     private Long id;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "profession2user",
+    @JoinTable(name = "profession_to_user",
             joinColumns = {@JoinColumn(name = "profession_id")},
             inverseJoinColumns = {@JoinColumn(name = "employee_id")})
     private List<User> employees;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions2job",
+    @JoinTable(name = "professions_to_job",
             joinColumns = {@JoinColumn(name = "profession_id")},
             inverseJoinColumns = {@JoinColumn(name = "job_id")})
     private List<Job> jobs;

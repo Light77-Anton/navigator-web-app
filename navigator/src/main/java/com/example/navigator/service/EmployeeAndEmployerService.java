@@ -110,7 +110,7 @@ public class EmployeeAndEmployerService {
         User user = userRepository.findByEmail(principal.getName()).get();
         ProfessionsResponse professionsResponse = new ProfessionsResponse();
         professionsResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getInterfaceLanguage())
-                .stream().map(ProfessionName::getProfessionName).toList());
+                .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
 
         return professionsResponse;
     }
@@ -128,73 +128,130 @@ public class EmployeeAndEmployerService {
         String city = requestForEmployees.getCity();
         String language = requestForEmployees.getLanguageName();
         byte isAuto = requestForEmployees.getIsAuto();
+        byte areLanguagesMatch = requestForEmployees.getAreLanguagesMatch();
         int usersCountWithoutBlackList;
         Pageable page = PageRequest.of(0, limit);
         List<Long> idList;
         List<User> employeeList;
         if (city != null) {
             if (isAuto == 1) {
-                employeeList = userRepository.findAllByProfessionLanguageAutoCountryAndCity(
-                        professionName.getProfession().getId(), country, city, language, page);
-                usersCountWithoutBlackList = employeeList.size();
-                employeeList.removeAll(user.getBlackList());
-                if (employeeList.size() != usersCountWithoutBlackList) {
-                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                    page = PageRequest.of(0, limit);
+                if (areLanguagesMatch == 1) {
                     employeeList = userRepository.findAllByProfessionLanguageAutoCountryAndCity(
                             professionName.getProfession().getId(), country, city, language, page);
+                    usersCountWithoutBlackList = employeeList.size();
                     employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findAllByProfessionLanguageAutoCountryAndCity(
+                                professionName.getProfession().getId(), country, city, language, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
+                } else {
+                    employeeList = userRepository.findAllByProfessionAutoCountryAndCity(
+                            professionName.getProfession().getId(), country, city, page);
+                    usersCountWithoutBlackList = employeeList.size();
+                    employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findAllByProfessionAutoCountryAndCity(
+                                professionName.getProfession().getId(), country, city, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
                 }
             } else {
-                employeeList = userRepository.findAllByProfessionLanguageCountryAndCity(
-                        professionName.getProfession().getId(), country, city, language, page);
-                usersCountWithoutBlackList = employeeList.size();
-                employeeList.removeAll(user.getBlackList());
-                if (employeeList.size() != usersCountWithoutBlackList) {
-                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                    page = PageRequest.of(0, limit);
+                if (areLanguagesMatch == 1) {
                     employeeList = userRepository.findAllByProfessionLanguageCountryAndCity(
                             professionName.getProfession().getId(), country, city, language, page);
+                    usersCountWithoutBlackList = employeeList.size();
                     employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findAllByProfessionLanguageCountryAndCity(
+                                professionName.getProfession().getId(), country, city, language, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
+                } else {
+                    employeeList = userRepository.findAllByProfessionCountryAndCity(
+                            professionName.getProfession().getId(), country, city, page);
+                    usersCountWithoutBlackList = employeeList.size();
+                    employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findAllByProfessionCountryAndCity(
+                                professionName.getProfession().getId(), country, city, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
                 }
             }
-            idList = new ArrayList<>(employeeList.stream().map(User::getId).toList());
+            idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
             if (idList.isEmpty()) {
                 employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
                         (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
                 return employeesListResponse;
             }
             user.setLastRequest(professionName + "-" + limit + "-" + country + "-" + city);
-            idList.removeAll(user.getBlackList().stream().map(User::getId).toList());
+            idList.removeAll(user.getBlackList().stream().map(User::getId).collect(Collectors.toList()));
             employeesListResponse.setEmployeesIdList(idList);
             return employeesListResponse;
         }
         if (isAuto == 1) {
-            employeeList = userRepository
-                    .findAllByProfessionLanguageAutoAndCountry(professionName.getProfession().getId(), country, language, page);
-            usersCountWithoutBlackList = employeeList.size();
-            employeeList.removeAll(user.getBlackList());
-            if (employeeList.size() != usersCountWithoutBlackList) {
-                limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                page = PageRequest.of(0, limit);
+            if (areLanguagesMatch == 1) {
                 employeeList = userRepository
                         .findAllByProfessionLanguageAutoAndCountry(professionName.getProfession().getId(), country, language, page);
+                usersCountWithoutBlackList = employeeList.size();
                 employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository
+                            .findAllByProfessionAutoAndCountry(professionName.getProfession().getId(), country, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
+            } else {
+                employeeList = userRepository
+                        .findAllByProfessionAutoAndCountry(professionName.getProfession().getId(), country, page);
+                usersCountWithoutBlackList = employeeList.size();
+                employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository
+                            .findAllByProfessionAutoAndCountry(professionName.getProfession().getId(), country, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
             }
         } else {
-            employeeList = userRepository
-                    .findAllByProfessionLanguageAndCountry(professionName.getProfession().getId(), country, language, page);
-            usersCountWithoutBlackList = employeeList.size();
-            employeeList.removeAll(user.getBlackList());
-            if (employeeList.size() != usersCountWithoutBlackList) {
-                limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                page = PageRequest.of(0, limit);
+            if (areLanguagesMatch == 1) {
                 employeeList = userRepository
                         .findAllByProfessionLanguageAndCountry(professionName.getProfession().getId(), country, language, page);
+                usersCountWithoutBlackList = employeeList.size();
                 employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository
+                            .findAllByProfessionAndCountry(professionName.getProfession().getId(), country, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
+            } else {
+                employeeList = userRepository
+                        .findAllByProfessionAndCountry(professionName.getProfession().getId(), language, page);
+                usersCountWithoutBlackList = employeeList.size();
+                employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository
+                            .findAllByProfessionAndCountry(professionName.getProfession().getId(), country, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
             }
         }
-        idList = new ArrayList<>(employeeList.stream().map(User::getId).toList());
+        idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
         if (idList.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
                     (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
@@ -242,6 +299,7 @@ public class EmployeeAndEmployerService {
         int limit = requestForEmployees.getLimit();
         String language = requestForEmployees.getLanguageName();
         byte isAuto = requestForEmployees.getIsAuto();
+        byte areLanguagesMatch = requestForEmployees.getAreLanguagesMatch();
         ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
         if (limit <= 0) {
             employeesListResponse.setError
@@ -252,12 +310,20 @@ public class EmployeeAndEmployerService {
         double userLon = user.getLocation().getLongitude();
         List<User> employeeList;
         if (isAuto == 1) {
-            employeeList = userRepository.findAllByProfessionAndLanguage(professionName.getProfession().getId(), language);
+            if (areLanguagesMatch == 1) {
+                employeeList = userRepository.findAllByProfessionAndLanguage(professionName.getProfession().getId(), language);
+            } else {
+                employeeList = userRepository.findAllByProfession(professionName.getProfession().getId());
+            }
         } else {
-            employeeList = userRepository.findAllByProfessionLanguageAndAuto(professionName.getProfession().getId(), language);
+            if (areLanguagesMatch == 1) {
+                employeeList = userRepository.findAllByProfessionLanguageAndAuto(professionName.getProfession().getId(), language);
+            } else {
+                employeeList = userRepository.findAllByProfessionAndAuto(professionName.getProfession().getId());
+            }
         }
         employeeList.removeAll(user.getBlackList());
-        List<Location> locations = employeeList.stream().map(User::getLocation).toList();
+        List<Location> locations = employeeList.stream().map(User::getLocation).collect(Collectors.toList());
         if (locations.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
                     (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
@@ -286,9 +352,9 @@ public class EmployeeAndEmployerService {
             }
         }
         user.setLastRequest(professionName + "-" + limit);
-        List<User> nearesEmployeeList = new ArrayList<>(map.keySet().stream().map(Location::getUser).toList());
-        List<Long> idList = new ArrayList<>(nearesEmployeeList.stream().map(User::getId).toList());
-        idList.removeAll(user.getBlackList().stream().map(User::getId).toList());
+        List<User> nearesEmployeeList = new ArrayList<>(map.keySet().stream().map(Location::getUser).collect(Collectors.toList()));
+        List<Long> idList = new ArrayList<>(nearesEmployeeList.stream().map(User::getId).collect(Collectors.toList()));
+        idList.removeAll(user.getBlackList().stream().map(User::getId).collect(Collectors.toList()));
         employeesListResponse.setEmployeesIdList(idList);
 
         return employeesListResponse;
@@ -302,6 +368,7 @@ public class EmployeeAndEmployerService {
         String city = requestForEmployees.getCity();
         String language = requestForEmployees.getLanguageName();
         byte isAuto = requestForEmployees.getIsAuto();
+        byte areLanguagesMatch = requestForEmployees.getAreLanguagesMatch();
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
         int usersCountWithoutBlackList;
         if (limit <= 0) {
@@ -313,67 +380,123 @@ public class EmployeeAndEmployerService {
         List<User> employeeList;
         if (city != null) {
             if (isAuto == 1) {
-                employeeList = userRepository.findTheBestByProfessionCountryLanguageAutoAndCity(
-                        professionName.getProfession().getId(), country, city, language, page);
-                usersCountWithoutBlackList = employeeList.size();
-                employeeList.removeAll(user.getBlackList());
-                if (employeeList.size() != usersCountWithoutBlackList) {
-                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                    page = PageRequest.of(0, limit);
+                if (areLanguagesMatch == 1) {
                     employeeList = userRepository.findTheBestByProfessionCountryLanguageAutoAndCity(
                             professionName.getProfession().getId(), country, city, language, page);
+                    usersCountWithoutBlackList = employeeList.size();
                     employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findTheBestByProfessionCountryLanguageAutoAndCity(
+                                professionName.getProfession().getId(), country, city, language, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
+                } else {
+                    employeeList = userRepository.findTheBestByProfessionCountryAutoAndCity(
+                            professionName.getProfession().getId(), country, city, page);
+                    usersCountWithoutBlackList = employeeList.size();
+                    employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findTheBestByProfessionCountryAutoAndCity(
+                                professionName.getProfession().getId(), country, city, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
                 }
             } else {
-                employeeList = userRepository.findTheBestByProfessionCountryLanguageAndCity(
-                        professionName.getProfession().getId(), country, city, language, page);
-                usersCountWithoutBlackList = employeeList.size();
-                employeeList.removeAll(user.getBlackList());
-                if (employeeList.size() != usersCountWithoutBlackList) {
-                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                    page = PageRequest.of(0, limit);
+                if (areLanguagesMatch == 1) {
                     employeeList = userRepository.findTheBestByProfessionCountryLanguageAndCity(
                             professionName.getProfession().getId(), country, city, language, page);
+                    usersCountWithoutBlackList = employeeList.size();
                     employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findTheBestByProfessionCountryLanguageAndCity(
+                                professionName.getProfession().getId(), country, city, language, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
+                } else {
+                    employeeList = userRepository.findTheBestByProfessionCountryAndCity(
+                            professionName.getProfession().getId(), country, city, page);
+                    usersCountWithoutBlackList = employeeList.size();
+                    employeeList.removeAll(user.getBlackList());
+                    if (employeeList.size() != usersCountWithoutBlackList) {
+                        limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                        page = PageRequest.of(0, limit);
+                        employeeList = userRepository.findTheBestByProfessionCountryAndCity(
+                                professionName.getProfession().getId(), country, city, page);
+                        employeeList.removeAll(user.getBlackList());
+                    }
                 }
             }
-            idList = new ArrayList<>(employeeList.stream().map(User::getId).toList());
+            idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
             if (idList.isEmpty()) {
                 employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
                         (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
                 return employeesListResponse;
             }
             user.setLastRequest(professionName + "-" + limit + "-" + country + "-" + city);
-            idList.removeAll(user.getBlackList().stream().map(User::getId).toList());
+            idList.removeAll(user.getBlackList().stream().map(User::getId).collect(Collectors.toList()));
             employeesListResponse.setEmployeesIdList(idList);
             return employeesListResponse;
         }
         if (isAuto == 1) {
-            employeeList = userRepository.findTheBestByProfessionLanguageAutoAndCountry(
-                    professionName.getProfession().getId(), country, language, page);
-            usersCountWithoutBlackList = employeeList.size();
-            employeeList.removeAll(user.getBlackList());
-            if (employeeList.size() != usersCountWithoutBlackList) {
-                limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                page = PageRequest.of(0, limit);
+            if (areLanguagesMatch == 1) {
                 employeeList = userRepository.findTheBestByProfessionLanguageAutoAndCountry(
                         professionName.getProfession().getId(), country, language, page);
+                usersCountWithoutBlackList = employeeList.size();
                 employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository.findTheBestByProfessionLanguageAutoAndCountry(
+                            professionName.getProfession().getId(), country, language, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
+            } else {
+                employeeList = userRepository.findTheBestByProfessionAutoAndCountry(
+                        professionName.getProfession().getId(), country, page);
+                usersCountWithoutBlackList = employeeList.size();
+                employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository.findTheBestByProfessionAutoAndCountry(
+                            professionName.getProfession().getId(), country, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
             }
         } else {
-            employeeList = userRepository.findTheBestByProfessionLanguageAndCountry(
-                    professionName.getProfession().getId(), country, language, page);
-            usersCountWithoutBlackList = employeeList.size();
-            employeeList.removeAll(user.getBlackList());
-            if (employeeList.size() != usersCountWithoutBlackList) {
-                limit = limit + (usersCountWithoutBlackList - employeeList.size());
-                page = PageRequest.of(0, limit);
+            if (areLanguagesMatch == 1) {
                 employeeList = userRepository.findTheBestByProfessionLanguageAndCountry(
                         professionName.getProfession().getId(), country, language, page);
+                usersCountWithoutBlackList = employeeList.size();
                 employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository.findTheBestByProfessionLanguageAndCountry(
+                            professionName.getProfession().getId(), country, language, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
+            } else {
+                employeeList = userRepository.findTheBestByProfessionAndCountry(
+                        professionName.getProfession().getId(), country, page);
+                usersCountWithoutBlackList = employeeList.size();
+                employeeList.removeAll(user.getBlackList());
+                if (employeeList.size() != usersCountWithoutBlackList) {
+                    limit = limit + (usersCountWithoutBlackList - employeeList.size());
+                    page = PageRequest.of(0, limit);
+                    employeeList = userRepository.findTheBestByProfessionAndCountry(
+                            professionName.getProfession().getId(), country, page);
+                    employeeList.removeAll(user.getBlackList());
+                }
             }
         }
-        idList = new ArrayList<>(employeeList.stream().map(User::getId).toList());
+        idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
         if (idList.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
                     (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));

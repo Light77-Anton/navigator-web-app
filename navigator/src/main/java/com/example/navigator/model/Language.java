@@ -2,7 +2,7 @@ package com.example.navigator.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -26,7 +26,7 @@ public class Language {
     private List<InProgramMessage> inProgramMessages;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "language2user",
+    @JoinTable(name = "language_to_user",
             joinColumns = {@JoinColumn(name = "language_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")})
     private List<User> users;

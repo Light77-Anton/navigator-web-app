@@ -1,5 +1,5 @@
 package com.example.navigator.model;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +22,7 @@ public class User {
     private String socialNetworksLinks;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "language2user",
+    @JoinTable(name = "language_to_user",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "language_id")})
     private List<Language> communicationLanguages;
@@ -84,25 +84,25 @@ public class User {
     private String restoreCode;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "banned2user",
+    @JoinTable(name = "banned_to_user",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "banned_id")})
     private List<User> blackList;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "banned2user",
+    @JoinTable(name = "banned_to_user",
             joinColumns = {@JoinColumn(name = "banned_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")})
     private List<User> InBlackListOf;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "favorite2user",
+    @JoinTable(name = "favorite_to_user",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "favorite_id")})
     private List<User> favorites;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "favorite2user",
+    @JoinTable(name = "favorite_to_user",
             joinColumns = {@JoinColumn(name = "favorite_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")})
     private List<User> favoriteOf;
@@ -112,6 +112,18 @@ public class User {
     private Location location;
 
     public Role getRole() {
+        if (role.equals("Employer")) {
+            return  Role.EMPLOYER;
+        } else if (role.equals("Employee")) {
+            return  Role.EMPLOYEE;
+        }
+
+        return Role.MODERATOR;
+    }
+
+
+    /*
+    public Role getRole() {
 
         return switch (role) {
             case "Employer" -> Role.EMPLOYER;
@@ -119,4 +131,6 @@ public class User {
             default -> Role.MODERATOR;
         };
     }
+
+     */
 }

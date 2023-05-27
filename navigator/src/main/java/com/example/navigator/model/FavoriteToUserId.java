@@ -1,7 +1,7 @@
 package com.example.navigator.model;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Getter

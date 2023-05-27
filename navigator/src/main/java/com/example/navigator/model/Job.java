@@ -2,7 +2,7 @@ package com.example.navigator.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class Job {
     private String jobAddress;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions2job",
+    @JoinTable(name = "professions_to_job",
             joinColumns = {@JoinColumn(name = "job_id")},
             inverseJoinColumns = {@JoinColumn(name = "profession_id")})
     private List<Profession> professions;
