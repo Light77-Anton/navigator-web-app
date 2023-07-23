@@ -3,10 +3,7 @@ import com.example.navigator.api.request.CommentRequest;
 import com.example.navigator.api.request.ModeratorDecision;
 import com.example.navigator.api.request.PasswordRequest;
 import com.example.navigator.api.request.ProfileRequest;
-import com.example.navigator.api.response.AvatarResponse;
-import com.example.navigator.api.response.DeleteAccountResponse;
-import com.example.navigator.api.response.JobListResponse;
-import com.example.navigator.api.response.ResultErrorsResponse;
+import com.example.navigator.api.response.*;
 import com.example.navigator.config.SecurityConfig;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
@@ -318,14 +315,10 @@ public class ProfileService {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errorsList = new ArrayList<>();
         String name = profileRequest.getName();
-        String email = profileRequest.getEmail();
         String phone = profileRequest.getPhone();
         String password = profileRequest.getPassword();
         if (!checkName(name)) {
             errorsList.add(checkAndGetMessageInSpecifiedLanguage(NAMES_ARE_INCORRECT, user.getInterfaceLanguage()));
-        }
-        if (!email.contains("@")) {
-            errorsList.add(checkAndGetMessageInSpecifiedLanguage(NOT_EMAIL, user.getInterfaceLanguage()));
         }
         if (!phone.matches(PHONE_NUMBER_PATTERN)) {
             errorsList.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_PHONE, user.getInterfaceLanguage()));
@@ -367,7 +360,6 @@ public class ProfileService {
         user.setCommunicationLanguages(languages);
         user.setInterfaceLanguage(profileRequest.getInterfaceLanguage());
         user.setName(name);
-        user.setEmail(email);
         user.setPhone(phone);
         user.setPassword(securityConfig.passwordEncoder().encode(password));
         if (user.getRole().equals(Role.EMPLOYEE)) {
@@ -404,14 +396,6 @@ public class ProfileService {
                 if (profileRequest.getEmployeesWorkRequirements().length() > 30) {
                     errorsList.add(checkAndGetMessageInSpecifiedLanguage
                             (EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG, user.getInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
-                    resultErrorsResponse.setErrors(errorsList);
-                    return resultErrorsResponse;
-                }
-            }
-            if (profileRequest.getSpecialEquipment() != null) {
-                if (profileRequest.getSpecialEquipment().length() > 30) {
-                    errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                            (SPECIAL_EQUIPMENT_TEXT_TOO_LONG, user.getInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
                     resultErrorsResponse.setErrors(errorsList);
                     return resultErrorsResponse;
                 }
@@ -481,5 +465,13 @@ public class ProfileService {
             return inProgramMessage.get().getMessage();
         }
         return inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage();
+    }
+
+    public StringResponse getUsersInterfaceLanguage(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).get();
+        StringResponse stringResponse = new StringResponse();
+        stringResponse.setString(user.getInterfaceLanguage());
+
+        return stringResponse;
     }
 }

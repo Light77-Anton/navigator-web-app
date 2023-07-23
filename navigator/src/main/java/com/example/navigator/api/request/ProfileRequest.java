@@ -1,11 +1,9 @@
 package com.example.navigator.api.request;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 
 @Component
@@ -22,8 +20,6 @@ public class ProfileRequest {
     private String socialNetworksLinks;
     @JsonProperty("name")
     private String name;
-    @JsonProperty("email")
-    private String email;
     @JsonProperty("phone")
     private String phone;
     @JsonProperty("password")
@@ -32,8 +28,6 @@ public class ProfileRequest {
     private List<String> professionsAndExtendedInfo;
     @JsonProperty("status")
     private String status;
-    @JsonProperty("special_equipment")
-    private String specialEquipment;
     @JsonProperty("employees_work_requirements")
     private String employeesWorkRequirements;
     @JsonProperty("is_driver_license")

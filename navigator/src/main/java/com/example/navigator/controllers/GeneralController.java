@@ -1,9 +1,6 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.*;
-import com.example.navigator.api.response.AvatarResponse;
-import com.example.navigator.api.response.JobListResponse;
-import com.example.navigator.api.response.ResultErrorsResponse;
-import com.example.navigator.api.response.VoteResponse;
+import com.example.navigator.api.response.*;
 import com.example.navigator.model.User;
 import com.example.navigator.service.EmployeeAndEmployerService;
 import com.example.navigator.service.ProfileService;
@@ -28,6 +25,12 @@ public class GeneralController {
         this.profileService = profileService;
         this.employeeAndEmployerService = employeeAndEmployerService;
         this.systemService = systemService;
+    }
+
+    @GetMapping("language/get")
+    public ResponseEntity<StringResponse> getUsersInterfaceLanguage(Principal principal) {
+
+        return ResponseEntity.ok(profileService.getUsersInterfaceLanguage(principal));
     }
 
     @PutMapping("moderator")

@@ -1,5 +1,4 @@
 package com.example.navigator.api.response;
-
 import com.example.navigator.model.Job;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
