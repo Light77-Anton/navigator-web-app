@@ -14,8 +14,8 @@ public class RegistrationRequest {
 
     @JsonProperty("interface_language")
     private String interfaceLanguage;
-    @JsonProperty("communication_languages")
-    private List<String> communicationLanguages;
+    @JsonProperty("communication_language")
+    private String communicationLanguage;
     @JsonProperty("role")
     private String role;
     @JsonProperty("social_networks_links")
@@ -24,8 +24,6 @@ public class RegistrationRequest {
     private boolean isDriverLicense;
     @JsonProperty("is_auto")
     private boolean isAuto;
-    @JsonProperty("professions")
-    private List<String> professions;
     @JsonProperty("name")
     private String name;
     @JsonProperty("email")
@@ -34,6 +32,8 @@ public class RegistrationRequest {
     private String phone;
     @JsonProperty("password")
     private String password;
+    @JsonProperty("repeated_password")
+    private String repeatedPassword;
     @JsonProperty("latitude")
     private double latitude;
     @JsonProperty("longitude")

@@ -27,6 +27,30 @@ public class GeneralController {
         this.systemService = systemService;
     }
 
+    @GetMapping("system/message/get")
+    public ResponseEntity<StringResponse> getMessageInSpecifiedLanguage(
+            @RequestBody InProgramMessageRequest inProgramMessageRequest) {
+
+        return ResponseEntity.ok(systemService.checkAndGetSingleMessageInSpecifiedLanguage(inProgramMessageRequest.getCodeName()
+                , inProgramMessageRequest.getLanguage()));
+    }
+
+    @GetMapping("languages/list/get")
+    public ResponseEntity<TextListResponse> getLanguagesList() {
+
+        return ResponseEntity.ok(systemService.getLanguagesList());
+    }
+
+    @GetMapping("system/text/get")
+    public ResponseEntity<MapTextResponse> checkAndGetTextListInSpecifiedLanguage
+            (@RequestBody TextListInSpecifiedLanguageRequest textList) {
+        MapTextResponse mapTextResponse = new MapTextResponse();
+        mapTextResponse.setMap(systemService.checkAndGetTextListInSpecifiedLanguage(textList));
+
+        return ResponseEntity.ok(mapTextResponse);
+    }
+
+
     @GetMapping("language/get")
     public ResponseEntity<StringResponse> getUsersInterfaceLanguage(Principal principal) {
 
@@ -117,7 +141,7 @@ public class GeneralController {
     }
 
     @PostMapping("restore")
-    public ResponseEntity<ResultErrorsResponse> getRecoveryCode(@RequestParam String email) {
+    public ResponseEntity<ResultErrorsResponse> getRecoveryCode(@RequestBody StringRequest email) {
 
         return ResponseEntity.ok(profileService.checkEmailAndGetCode(email));
     }

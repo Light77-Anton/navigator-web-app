@@ -1,8 +1,5 @@
 package com.example.navigator.service;
-import com.example.navigator.api.request.CommentRequest;
-import com.example.navigator.api.request.ModeratorDecision;
-import com.example.navigator.api.request.PasswordRequest;
-import com.example.navigator.api.request.ProfileRequest;
+import com.example.navigator.api.request.*;
 import com.example.navigator.api.response.*;
 import com.example.navigator.config.SecurityConfig;
 import com.example.navigator.model.*;
@@ -83,7 +80,19 @@ public class ProfileService {
     private final String SOCIAL_NETWORKS_TEXT_TOO_LONG = "SOCIAL_NETWORKS_TEXT_TOO_LONG";
     private final String SPECIAL_EQUIPMENT_TEXT_TOO_LONG = "SPECIAL_EQUIPMENT_TEXT_TOO_LONG";
     private final String EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG = "EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG";
+    private final String REGISTRATION_CONFIRMATION_MESSAGE_LOGIN = "REGISTRATION_CONFIRMATION_MESSAGE_LOGIN";
+    private final String USER_NOT_FOUND = "USER_NOT_FOUND";
 
+
+    public StringResponse activateAccount(StringRequest email) {
+        User user = userRepository.findByEmail(email.getString()).get();
+        user.setBlocked(false);
+        StringResponse stringResponse = new StringResponse();
+        stringResponse.setString(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_LOGIN
+                , user.getInterfaceLanguage()));
+
+        return stringResponse;
+    }
 
     public ResultErrorsResponse setModerator(Principal principal) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
@@ -269,7 +278,7 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse checkEmailAndGetCode(String email) {
+    public ResultErrorsResponse checkEmailAndGetCode(StringRequest email) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
         if (email == null) {
@@ -277,7 +286,7 @@ public class ProfileService {
             resultErrorsResponse.setErrors(errors);
             return resultErrorsResponse;
         }
-        Optional<User> user = userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email.getString());
         if (user.isEmpty()) {
             errors.add("user with such email is not found");
             resultErrorsResponse.setErrors(errors);
@@ -285,7 +294,7 @@ public class ProfileService {
         }
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom("NavigatorApp");
-        mail.setTo(email);
+        mail.setTo(email.getString());
         mail.setSubject("Request for recovery code");
         char[] availableChars = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
         StringBuilder hash = new StringBuilder();

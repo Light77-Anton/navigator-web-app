@@ -1,15 +1,20 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.InProgramMessageRequest;
 import com.example.navigator.api.request.ProfessionRequest;
+import com.example.navigator.api.request.TextListInSpecifiedLanguageRequest;
 import com.example.navigator.api.response.ResultErrorsResponse;
+import com.example.navigator.api.response.StringResponse;
+import com.example.navigator.api.response.TextListResponse;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SystemService {
@@ -35,6 +40,31 @@ public class SystemService {
     private final String PROFESSION_ALREADY_EXISTS = "PROFESSION_ALREADY_EXISTS";
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
+
+    public TextListResponse getLanguagesList() {
+        TextListResponse textListResponse = new TextListResponse();
+        textListResponse.setList(languageRepository.findAll().stream()
+                .map(Language::getLanguageEndonym).collect(Collectors.toList()));
+
+        return textListResponse;
+    }
+
+    public HashMap<String, String> checkAndGetTextListInSpecifiedLanguage(TextListInSpecifiedLanguageRequest textList) {
+        HashMap<String, String> map = new HashMap<>();
+        String interfaceLanguage = textList.getLanguage();
+        for (String codeName : textList.getCodeNameList()) {
+            Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository
+                    .findByCodeNameAndLanguage(codeName, interfaceLanguage);
+            if (inProgramMessage.isPresent()) {
+                map.put(codeName, inProgramMessage.get().getMessage());
+            } else {
+                map.put(codeName,
+                        inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage());
+            }
+        }
+
+        return map;
+    }
 
     public ResultErrorsResponse addNewProfessionId() {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
@@ -144,5 +174,19 @@ public class SystemService {
             return inProgramMessage.get().getMessage();
         }
         return inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage();
+    }
+
+    public StringResponse checkAndGetSingleMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
+        StringResponse stringResponse = new StringResponse();
+        Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository
+                .findByCodeNameAndLanguage(codeName, interfaceLanguage);
+        if (inProgramMessage.isPresent()) {
+            stringResponse.setString(inProgramMessage.get().getMessage());
+            return stringResponse;
+        }
+        stringResponse.setString(inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get()
+                .getMessage());
+
+        return stringResponse;
     }
 }

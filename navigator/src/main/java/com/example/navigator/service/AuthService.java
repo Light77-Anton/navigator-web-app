@@ -7,6 +7,8 @@ import com.example.navigator.config.SecurityConfig;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,8 +24,8 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-
-
+    @Autowired
+    private JavaMailSender javaMailSender;
     @Autowired
     private SecurityConfig securityConfig;
     @Autowired
@@ -52,6 +54,7 @@ public class AuthService {
     private final String NAME_PATTERN_THREE = "[A-Z][a-z]+\\s[A-Z][a-z]+";
     private final String FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final String DEFAULT_LANGUAGE = "English";
+    private final String PASSWORDS_ARE_NOT_EQUALS = "PASSWORDS_ARE_NOT_EQUALS";
     private final String ACCOUNT_IS_BANNED_MESSAGE_CODE = "ACCOUNT_IS_BANNED_MESSAGE";
     private final String INCORRECT_ENTERED_CAPTCHA = "Entered code from captcha is incorrect";
     private final String CAPTCHA_IS_NOT_EXIST = "Captcha is not exist, possibly it is expired";
@@ -69,6 +72,7 @@ public class AuthService {
             "Text about special equipment is too long; it must be no more then 30 symbols";
     private final String EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG =
             "Text about work requirements is too long; it must be no more then 30 symbols";
+    private final String REGISTRATION_CONFIRMATION_MESSAGE_EMAIL = "REGISTRATION_CONFIRMATION_MESSAGE_EMAIL";
 
     public AuthService(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -127,6 +131,9 @@ public class AuthService {
             resultErrorsResponse.setErrors(errorsList);
             return resultErrorsResponse;
         }
+        if (!registrationRequest.getPassword().equals(registrationRequest.getRepeatedPassword())) {
+            errorsList.add(PASSWORDS_ARE_NOT_EQUALS);
+        }
         if (!checkName(registrationRequest.getName())) {
             errorsList.add(NAMES_ARE_INCORRECT);
         }
@@ -145,16 +152,14 @@ public class AuthService {
         if (registrationRequest.getSocialNetworksLinks().length() > 30) {
             errorsList.add(SOCIAL_NETWORKS_TEXT_TOO_LONG);
         }
-        if (registrationRequest.getCommunicationLanguages() == null
-                || registrationRequest.getCommunicationLanguages().isEmpty()) {
+        if (registrationRequest.getCommunicationLanguage() == null
+                || registrationRequest.getCommunicationLanguage().isEmpty()) {
             errorsList.add(COMMUNICATION_LANGUAGE_REQUIREMENT);
         } else if (registrationRequest.getInterfaceLanguage() == null) {
             errorsList.add(INTERFACE_LANGUAGE_REQUIREMENT);
         } else {
-            for (String languageName : registrationRequest.getCommunicationLanguages()) {
-                if (languageRepository.findByName(languageName).isEmpty()) {
-                    errorsList.add(APP_DOES_NOT_HAVE_LANGUAGE + languageName);
-                }
+            if (languageRepository.findByName(registrationRequest.getCommunicationLanguage()).isEmpty()) {
+                errorsList.add(APP_DOES_NOT_HAVE_LANGUAGE + registrationRequest.getCommunicationLanguage());
             }
             if (languageRepository.findByName(registrationRequest.getInterfaceLanguage()).isEmpty()) {
                 errorsList.add(APP_DOES_NOT_HAVE_LANGUAGE + registrationRequest.getInterfaceLanguage());
@@ -168,9 +173,7 @@ public class AuthService {
         EmployerRequests employerRequests = null;
         User user = new User();
         List<Language> languages = new ArrayList<>();
-        for (String lang : registrationRequest.getCommunicationLanguages()) {
-            languages.add(languageRepository.findByName(lang).get());
-        }
+        languages.add(languageRepository.findByName(registrationRequest.getCommunicationLanguage()).get());
         user.setCommunicationLanguages(languages);
         user.setInterfaceLanguage(registrationRequest.getInterfaceLanguage());
         user.setEmail(registrationRequest.getEmail());
@@ -178,7 +181,7 @@ public class AuthService {
         user.setPassword(securityConfig.passwordEncoder().encode(registrationRequest.getPassword()));
         user.setPhone(registrationRequest.getPhone());
         user.setRegTime(LocalDateTime.now());
-        user.setBlocked(false);
+        user.setBlocked(true);
         user.setSocialNetworksLinks(registrationRequest.getSocialNetworksLinks());
         if (registrationRequest.getRole().equals("Employer")) {
             user.setRole("Employer");
@@ -190,21 +193,8 @@ public class AuthService {
             user.setRole("Employee");
             employeeData = new EmployeeData();
             employeeData.setStatus("INACTIVE");
-            List<Profession> professionList = new ArrayList<>();
-            if (registrationRequest.getProfessions() != null) {
-                for (String professionName : registrationRequest.getProfessions()) {
-                    Optional<ProfessionName> profession = professionNameRepository.findByName(professionName);
-                    if (profession.isEmpty()) {
-                        errorsList.add(PROFESSION_NOT_FOUND);
-                        resultErrorsResponse.setErrors(errorsList);
-                        return resultErrorsResponse;
-                    }
-                    professionList.add(profession.get().getProfession());
-                }
-            }
             employeeData.setDriverLicense(registrationRequest.isDriverLicense());
             employeeData.setAuto(registrationRequest.isAuto());
-            employeeData.setProfessions(professionList);
             employeeData.setEmployee(user);
             user.setEmployeeData(employeeData);
         }
@@ -216,6 +206,13 @@ public class AuthService {
         location.setUser(user);
         user.setLocation(location);
         userRepository.save(user);
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom("NavigatorApp");
+        mail.setTo(registrationRequest.getEmail());
+        mail.setSubject("Registration confirmation");
+        mail.setText(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_EMAIL,
+                registrationRequest.getInterfaceLanguage()));
+        javaMailSender.send(mail); // cделать ссылку!!!
         if (employeeData != null) {
             employeeDataRepository.save(employeeData);
         }
@@ -226,6 +223,15 @@ public class AuthService {
         resultErrorsResponse.setResult(true);
 
         return resultErrorsResponse;
+    }
+
+    private String checkAndGetMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
+        Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository
+                .findByCodeNameAndLanguage(codeName, interfaceLanguage);
+        if (inProgramMessage.isPresent()) {
+            return inProgramMessage.get().getMessage();
+        }
+        return inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage();
     }
 
     private boolean checkName(String name) {

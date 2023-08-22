@@ -1,10 +1,8 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.LoginRequest;
 import com.example.navigator.api.request.RegistrationRequest;
-import com.example.navigator.api.response.CaptchaResponse;
-import com.example.navigator.api.response.DeleteAccountResponse;
-import com.example.navigator.api.response.LoginResponse;
-import com.example.navigator.api.response.ResultErrorsResponse;
+import com.example.navigator.api.request.StringRequest;
+import com.example.navigator.api.response.*;
 import com.example.navigator.service.AuthService;
 import com.example.navigator.service.CaptchaService;
 import com.example.navigator.service.ProfileService;
@@ -72,5 +70,11 @@ public class AuthController {
     public ResponseEntity<DeleteAccountResponse> deleteAccount(Principal principal) { // по идее сначала должен быть вызван logout
 
         return ResponseEntity.ok(profileService.deleteAccount(principal));
+    }
+
+    @PutMapping("account/activate")
+    public ResponseEntity<StringResponse> activateAccount(@RequestBody StringRequest email) {
+
+        return ResponseEntity.ok(profileService.activateAccount(email));
     }
 }
