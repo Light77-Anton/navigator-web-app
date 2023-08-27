@@ -72,9 +72,9 @@ public class AuthController {
         return ResponseEntity.ok(profileService.deleteAccount(principal));
     }
 
-    @PutMapping("account/activate")
-    public ResponseEntity<StringResponse> activateAccount(@RequestBody StringRequest email) {
+    @PutMapping("account/activate/{id}")
+    public ResponseEntity<StringResponse> activateAccount(@PathVariable Long userId) {
 
-        return ResponseEntity.ok(profileService.activateAccount(email));
+        return ResponseEntity.ok(profileService.activateAccount(userId));
     }
 }

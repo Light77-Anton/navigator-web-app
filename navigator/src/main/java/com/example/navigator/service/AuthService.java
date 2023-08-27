@@ -59,7 +59,9 @@ public class AuthService {
     private final String INCORRECT_ENTERED_CAPTCHA = "Entered code from captcha is incorrect";
     private final String CAPTCHA_IS_NOT_EXIST = "Captcha is not exist, possibly it is expired";
     private final String NAMES_ARE_INCORRECT = "First name and last name are incorrect";
+    private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String NOT_EMAIL = "It is not email";
+    private final String ACCOUNT_NOT_ACTIVATED = "ACCOUNT_NOT_ACTIVATED";
     private final String TOO_SHORT_PASSWORD = "Password is too short";
     private final String INCORRECT_PHONE = "Phone number is incorrect";
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "App does not have specified language : ";
@@ -102,18 +104,32 @@ public class AuthService {
 
     public LoginResponse getLoginResponse(LoginRequest loginRequest) {
         LoginResponse loginResponse = new LoginResponse();
-        Authentication auth = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
-                        loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        org.springframework.security.core.userdetails.User user =
-                (org.springframework.security.core.userdetails.User) auth.getPrincipal();
-        loginResponse.setResult(true);
-        User currentUser = userRepository.findByEmail(user.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException(user.getUsername()));
-        loginResponse.setUserId(currentUser.getId());
+        Optional<User> requestedUser = userRepository.findByEmail(loginRequest.getEmail());
+        if (requestedUser.isEmpty()) {
+            loginResponse.setBlockMessage(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND, DEFAULT_LANGUAGE));
+            return loginResponse;
+        } else if (!requestedUser.get().isActivated()) {
+            loginResponse.setBlockMessage(checkAndGetMessageInSpecifiedLanguage(ACCOUNT_NOT_ACTIVATED, DEFAULT_LANGUAGE));
 
-        return loginResponse;
+            return loginResponse;
+        } else if(requestedUser.get().isBlocked()) {
+            loginResponse.setBlockMessage(checkAndGetMessageInSpecifiedLanguage(ACCOUNT_IS_BANNED_MESSAGE_CODE, DEFAULT_LANGUAGE));
+
+            return loginResponse;
+        } else {
+            Authentication auth = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
+                            loginRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            org.springframework.security.core.userdetails.User user =
+                    (org.springframework.security.core.userdetails.User) auth.getPrincipal();
+            loginResponse.setResult(true);
+            User currentUser = userRepository.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException(user.getUsername()));
+            loginResponse.setUserId(currentUser.getId());
+
+            return loginResponse;
+        }
     }
 
     public ResultErrorsResponse checkProfileDataForRegistration(RegistrationRequest registrationRequest) {
@@ -181,7 +197,8 @@ public class AuthService {
         user.setPassword(securityConfig.passwordEncoder().encode(registrationRequest.getPassword()));
         user.setPhone(registrationRequest.getPhone());
         user.setRegTime(LocalDateTime.now());
-        user.setBlocked(true);
+        user.setBlocked(false);
+        user.setActivated(false);
         user.setSocialNetworksLinks(registrationRequest.getSocialNetworksLinks());
         if (registrationRequest.getRole().equals("Employer")) {
             user.setRole("Employer");
@@ -210,9 +227,11 @@ public class AuthService {
         mail.setFrom("NavigatorApp");
         mail.setTo(registrationRequest.getEmail());
         mail.setSubject("Registration confirmation");
-        mail.setText(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_EMAIL,
+        User registratedUser = userRepository.findByEmail(registrationRequest.getEmail()).get();
+        mail.setText(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_EMAIL + "\n"
+                        + "http://localhost:8080/api/auth/account/activate/" + registratedUser.getId(), // cделать ссылку!!!
                 registrationRequest.getInterfaceLanguage()));
-        javaMailSender.send(mail); // cделать ссылку!!!
+        javaMailSender.send(mail);
         if (employeeData != null) {
             employeeDataRepository.save(employeeData);
         }

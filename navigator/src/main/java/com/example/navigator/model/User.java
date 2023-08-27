@@ -36,6 +36,9 @@ public class User {
     @Column(name = "ranking", nullable = false)
     private double ranking;
 
+    @Column(name = "is_activated", nullable = false)
+    private boolean isActivated;
+
     @Column(name = "is_blocked", nullable = false)
     private boolean isBlocked;
 

@@ -84,10 +84,10 @@ public class ProfileService {
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
 
 
-    public StringResponse activateAccount(StringRequest email) {
-        User user = userRepository.findByEmail(email.getString()).get();
-        user.setBlocked(false);
+    public StringResponse activateAccount(Long userId) {
+        User user = userRepository.findById(userId).get();
         StringResponse stringResponse = new StringResponse();
+        user.setActivated(true);
         stringResponse.setString(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_LOGIN
                 , user.getInterfaceLanguage()));
 

@@ -5,6 +5,7 @@ CREATE TABLE users (
     interface_language VARCHAR(50) NOT NULL,
     ranking REAL NOT NULL,
     is_blocked SMALLINT NOT NULL,
+    is_activated SMALLINT NOT NULL,
     name VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL,
     phone VARCHAR(50),
