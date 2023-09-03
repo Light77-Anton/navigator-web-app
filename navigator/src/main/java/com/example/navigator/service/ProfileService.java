@@ -54,6 +54,8 @@ public class ProfileService {
     @Autowired
     private ProfessionToUserRepository professionToUserRepository;
     @Autowired
+    private VoteRepository voteRepository;
+    @Autowired
     private SecurityConfig securityConfig;
 
     private static final long UPLOAD_LIMIT = 5242880;
@@ -82,7 +84,37 @@ public class ProfileService {
     private final String EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG = "EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG";
     private final String REGISTRATION_CONFIRMATION_MESSAGE_LOGIN = "REGISTRATION_CONFIRMATION_MESSAGE_LOGIN";
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
+    private final String NO_INFO_EMPLOYEE = "NO_INFO_EMPLOYEE";
 
+    public EmployeeInfoResponse getEmployeeInfo(long id, Principal principal) {
+        User employer = userRepository.findByEmail(principal.getName()).get();
+        EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
+        Optional<User> employee = userRepository.findById(id);
+        if (employee.isEmpty() || !employee.get().getRole().equals(Role.EMPLOYEE)) {
+            employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage
+                    (NO_INFO_EMPLOYEE, employer.getInterfaceLanguage()));
+            return employeeInfoResponse;
+        }
+        User user = employee.get();
+        employeeInfoResponse.setRanking(user.getRanking());
+        employeeInfoResponse.setStatus(user.getEmployeeData().getStatus());
+        employeeInfoResponse.setName(user.getName());
+        employeeInfoResponse.setEmail(user.getEmail());
+        employeeInfoResponse.setPhone(user.getPhone());
+        employeeInfoResponse.setAvatar(user.getAvatar());
+        List<String> listWithExtendedInfo = new ArrayList<>();
+        List<ProfessionToUser> employeesProfessionsList = professionToUserRepository.findAllByEmployeeId(user.getId());
+        for (ProfessionToUser ptu : employeesProfessionsList) {
+            if (ptu.getExtendedInfoFromEmployee() != null) {
+                if (!ptu.getExtendedInfoFromEmployee().matches("\\s+")) {
+                    listWithExtendedInfo.add(ptu.getExtendedInfoFromEmployee());
+                }
+            }
+        }
+        employeeInfoResponse.setExtendedInfoFromEmployeeAboutProfessions(listWithExtendedInfo);
+
+        return employeeInfoResponse;
+    }
 
     public StringResponse activateAccount(Long userId) {
         User user = userRepository.findById(userId).get();
@@ -140,6 +172,29 @@ public class ProfileService {
     public User getSender(Principal principal) {
 
         return userRepository.findByEmail(principal.getName()).get();
+    }
+
+    public VoteResponse vote(VoteRequest voteRequest) {
+        VoteResponse voteResponse = new VoteResponse();
+        Optional<User> user = userRepository.findById(voteRequest.getUserId());
+        voteResponse.setValue(voteRequest.getValue());
+        if (user.isEmpty()) {
+            return voteResponse;
+        }
+        voteResponse.setUserId(voteRequest.getUserId());
+        Vote newVote = new Vote();
+        newVote.setValue(voteRequest.getValue());
+        newVote.setUser(userRepository.findById(voteRequest.getUserId()).get());
+        voteRepository.save(newVote);
+        List<Byte> values = new ArrayList<>();
+        for (Vote vote : voteRepository.findAllByUserId(voteRequest.getUserId())) {
+            values.add(vote.getValue());
+        }
+        OptionalDouble avg = values.stream().mapToDouble(Byte::doubleValue).average();
+        user.get().setRanking(avg.getAsDouble());
+        userRepository.save(user.get());
+
+        return voteResponse;
     }
 
     public ResultErrorsResponse comment(CommentRequest commentRequest, Principal principal) {

@@ -1,6 +1,5 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.JobRequest;
-import com.example.navigator.api.request.LocationRequest;
 import com.example.navigator.api.request.RequestForEmployees;
 import com.example.navigator.api.request.VoteRequest;
 import com.example.navigator.api.response.*;
@@ -18,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class EmployeeAndEmployerService {
+public class SearchService {
 
     @Autowired
     private EmployerPassiveSearchDataRepository employerPassiveSearchDataRepository;
@@ -64,56 +63,6 @@ public class EmployeeAndEmployerService {
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String OFFER_IS_NOT_EXIST = "OFFER_IS_NOT_EXIST";
     private final String USER_IS_TEMPORARILY_BUSY = "USER_IS_TEMPORARILY_BUSY";
-
-    //@Scheduled(fixedRate = 150000) // под вопросом,возможно это можно будет реализовать на фронте
-    public ResultErrorsResponse checkAndDeleteNotConfirmedJobs() {
-        jobRepository.deleteAllNotConfirmedJobsByExpirationTime(System.currentTimeMillis());
-        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
-        resultErrorsResponse.setResult(true);
-
-        return resultErrorsResponse;
-    }
-
-    public VoteResponse vote(VoteRequest voteRequest) {
-        VoteResponse voteResponse = new VoteResponse();
-        Optional<User> user = userRepository.findById(voteRequest.getUserId());
-        voteResponse.setValue(voteRequest.getValue());
-        if (user.isEmpty()) {
-            return voteResponse;
-        }
-        voteResponse.setUserId(voteRequest.getUserId());
-        Vote newVote = new Vote();
-        newVote.setValue(voteRequest.getValue());
-        newVote.setUser(userRepository.findById(voteRequest.getUserId()).get());
-        voteRepository.save(newVote);
-        List<Byte> values = new ArrayList<>();
-        for (Vote vote : voteRepository.findAllByUserId(voteRequest.getUserId())) {
-            values.add(vote.getValue());
-        }
-        OptionalDouble avg = values.stream().mapToDouble(Byte::doubleValue).average();
-        user.get().setRanking(avg.getAsDouble());
-        userRepository.save(user.get());
-
-        return voteResponse;
-    }
-
-    public ResultErrorsResponse updateLocation(long locationId, LocationRequest locationRequest) {
-        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
-        resultErrorsResponse.setResult(true);
-        locationRepository.updateLocation(locationRequest.getLatitude(), locationRequest.getLongitude(),
-                locationRequest.getCity(), locationRequest.getCountry(), locationId);
-
-        return resultErrorsResponse;
-    }
-
-    public ProfessionsResponse getProfessionsList(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
-        ProfessionsResponse professionsResponse = new ProfessionsResponse();
-        professionsResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getInterfaceLanguage())
-                .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
-
-        return professionsResponse;
-    }
 
     public EmployeesListResponse getEmployeesOfChosenProfession(RequestForEmployees requestForEmployees, Principal principal) {
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
@@ -263,36 +212,6 @@ public class EmployeeAndEmployerService {
         return employeesListResponse;
     }
 
-    public EmployeeInfoResponse getEmployeeInfo(long id, Principal principal) {
-        User employer = userRepository.findByEmail(principal.getName()).get();
-        EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
-        Optional<User> employee = userRepository.findById(id);
-        if (employee.isEmpty() || !employee.get().getRole().equals(Role.EMPLOYEE)) {
-            employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (NO_INFO_EMPLOYEE, employer.getInterfaceLanguage()));
-            return employeeInfoResponse;
-        }
-        User user = employee.get();
-        employeeInfoResponse.setRanking(user.getRanking());
-        employeeInfoResponse.setStatus(user.getEmployeeData().getStatus());
-        employeeInfoResponse.setName(user.getName());
-        employeeInfoResponse.setEmail(user.getEmail());
-        employeeInfoResponse.setPhone(user.getPhone());
-        employeeInfoResponse.setAvatar(user.getAvatar());
-        List<String> listWithExtendedInfo = new ArrayList<>();
-        List<ProfessionToUser> employeesProfessionsList = professionToUserRepository.findAllByEmployeeId(user.getId());
-        for (ProfessionToUser ptu : employeesProfessionsList) {
-            if (ptu.getExtendedInfoFromEmployee() != null) {
-                if (!ptu.getExtendedInfoFromEmployee().matches("\\s+")) {
-                    listWithExtendedInfo.add(ptu.getExtendedInfoFromEmployee());
-                }
-            }
-        }
-        employeeInfoResponse.setExtendedInfoFromEmployeeAboutProfessions(listWithExtendedInfo);
-
-        return employeeInfoResponse;
-    }
-
     public EmployeesListResponse getTheNearestEmployeesInfo(RequestForEmployees requestForEmployees, Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).get();
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
@@ -306,8 +225,8 @@ public class EmployeeAndEmployerService {
                     (checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getInterfaceLanguage()));
             return employeesListResponse;
         }
-        double userLat = user.getLocation().getLatitude();
-        double userLon = user.getLocation().getLongitude();
+        double jobAddressLat = requestForEmployees.getJobAddressLat();
+        double jobAddressLon = requestForEmployees.getJobAddressLon();
         List<User> employeeList;
         if (isAuto == 1) {
             if (areLanguagesMatch == 1) {
@@ -334,9 +253,9 @@ public class EmployeeAndEmployerService {
             double lat = loc.getLatitude();
             double lon = loc.getLongitude();
             double currentRange = AVERAGE_RADIUS_OF_THE_EARTH * (180/Math.PI) * Math.acos(
-                    Math.sin(userLat * (Math.PI/180)) * Math.sin(lat * (Math.PI/180)) +
-                            Math.cos(userLat * (Math.PI/180)) * Math.cos(lat * (Math.PI/180))
-                                    * Math.cos(userLon - lon * (Math.PI/180)));
+                    Math.sin(jobAddressLat * (Math.PI/180)) * Math.sin(lat * (Math.PI/180)) +
+                            Math.cos(jobAddressLat * (Math.PI/180)) * Math.cos(lat * (Math.PI/180))
+                                    * Math.cos(jobAddressLon - lon * (Math.PI/180)));
             if (map.size() < requestForEmployees.getLimit()) {
                 map.put(loc, currentRange);
                 continue;
@@ -571,33 +490,7 @@ public class EmployeeAndEmployerService {
         return resultErrorsResponse;
     }
 
-    public TerminateJobResponse requestToTerminateJob(Job jobToTerminate, Principal principal) {
-        TerminateJobResponse terminateJobResponse = new TerminateJobResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
-        terminateJobResponse.setJob(jobToTerminate);
-        terminateJobResponse.setSenderName(user.getName());
-        terminateJobResponse.setSenderId(user.getId());
-        if (user.getRole().equals(Role.EMPLOYEE)) {
-            terminateJobResponse.setRecipientId(jobToTerminate.getEmployerRequests().getEmployer().getId());
-            terminateJobResponse.setRecipientName(jobToTerminate.getEmployerRequests().getEmployer().getName());
-        } else {
-            terminateJobResponse.setRecipientId(jobToTerminate.getEmployeeData().getEmployee().getId());
-            terminateJobResponse.setRecipientName(jobToTerminate.getEmployeeData().getEmployee().getName());
-        }
-
-        return terminateJobResponse;
-    }
-
-    public TerminateJobResponse responseToTerminateJob(TerminateJobResponse terminateJobResponse) {
-        if (terminateJobResponse.getRecipientAnswer().equals("AGREES")) {
-            jobRepository.delete(terminateJobResponse.getJob());
-            terminateJobResponse.setJob(null);
-        }
-
-        return terminateJobResponse;
-    }
-
-    private String checkAndGetMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
+    public String checkAndGetMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
         Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository
                 .findByCodeNameAndLanguage(codeName, interfaceLanguage);
         if (inProgramMessage.isPresent()) {

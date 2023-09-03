@@ -7,7 +7,7 @@ import com.example.navigator.model.ChatMessage;
 import com.example.navigator.model.ChatNotification;
 import com.example.navigator.model.Job;
 import com.example.navigator.service.ChatMessageService;
-import com.example.navigator.service.EmployeeAndEmployerService;
+import com.example.navigator.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -29,13 +29,13 @@ public class ChatController {
     @Autowired
     private ChatMessageService chatMessageService;
     @Autowired
-    private EmployeeAndEmployerService employeeAndEmployerService;
+    private SearchService searchService;
     private final String URL = "/queue/messages";
 
     @MessageMapping("response/job/terminate")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
     public ResponseEntity<TerminateJobResponse> responseToTerminateJob(@Payload TerminateJobResponse terminateJobResponse) {
-        TerminateJobResponse recipientAnswer = employeeAndEmployerService
+        TerminateJobResponse recipientAnswer = chatMessageService
                 .responseToTerminateJob(terminateJobResponse);
         messagingTemplate.convertAndSendToUser(recipientAnswer.getSenderId().toString(), URL, recipientAnswer);
 
@@ -45,7 +45,7 @@ public class ChatController {
     @MessageMapping("request/job/terminate")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
     public ResponseEntity<TerminateJobResponse> requestToTerminateJob(@Payload Job jobToTerminate, Principal principal) {
-        TerminateJobResponse terminateJobResponse = employeeAndEmployerService
+        TerminateJobResponse terminateJobResponse = chatMessageService
                 .requestToTerminateJob(jobToTerminate, principal);
         messagingTemplate.convertAndSendToUser(terminateJobResponse.getRecipientId().toString(), URL, terminateJobResponse);
 

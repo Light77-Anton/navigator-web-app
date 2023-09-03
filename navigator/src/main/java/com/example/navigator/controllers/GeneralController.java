@@ -2,7 +2,7 @@ package com.example.navigator.controllers;
 import com.example.navigator.api.request.*;
 import com.example.navigator.api.response.*;
 import com.example.navigator.model.User;
-import com.example.navigator.service.EmployeeAndEmployerService;
+import com.example.navigator.service.SearchService;
 import com.example.navigator.service.ProfileService;
 import com.example.navigator.service.SystemService;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +17,13 @@ import java.security.Principal;
 public class GeneralController {
 
     private ProfileService profileService;
-    private EmployeeAndEmployerService employeeAndEmployerService;
+    private SearchService searchService;
     private SystemService systemService;
 
-    GeneralController(ProfileService profileService, EmployeeAndEmployerService employeeAndEmployerService,
+    GeneralController(ProfileService profileService, SearchService searchService,
                       SystemService systemService) {
         this.profileService = profileService;
-        this.employeeAndEmployerService = employeeAndEmployerService;
+        this.searchService = searchService;
         this.systemService = systemService;
     }
 
@@ -137,7 +137,7 @@ public class GeneralController {
     public ResponseEntity<ResultErrorsResponse> updateLocation(@PathVariable long id,
                                                @RequestBody LocationRequest locationRequest) {
 
-        return ResponseEntity.ok(employeeAndEmployerService.updateLocation(id, locationRequest));
+        return ResponseEntity.ok(systemService.updateLocation(id, locationRequest));
     }
 
     @PostMapping("restore")
@@ -156,14 +156,14 @@ public class GeneralController {
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
     public ResponseEntity<VoteResponse> like(@RequestBody VoteRequest voteRequest) {
 
-        return ResponseEntity.ok(employeeAndEmployerService.vote(voteRequest));
+        return ResponseEntity.ok(profileService.vote(voteRequest));
     }
 
     @PutMapping("user/dislike")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
     public ResponseEntity<VoteResponse> dislike(@RequestBody VoteRequest voteRequest) {
 
-        return ResponseEntity.ok(employeeAndEmployerService.vote(voteRequest));
+        return ResponseEntity.ok(profileService.vote(voteRequest));
     }
 
     @PostMapping("comment")
@@ -171,13 +171,6 @@ public class GeneralController {
     public ResponseEntity<ResultErrorsResponse> comment(@RequestBody CommentRequest commentRequest, Principal principal) {
 
         return ResponseEntity.ok(profileService.comment(commentRequest, principal));
-    }
-
-    @PostMapping("employer/search/passive")
-    @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> setPassiveSearch(@RequestBody JobRequest jobRequest, Principal principal) {
-
-        return ResponseEntity.ok(employeeAndEmployerService.setPassiveSearch(jobRequest, principal));
     }
 
     @PostMapping("user/{id}/favorite/{decision}")
@@ -220,6 +213,13 @@ public class GeneralController {
     @DeleteMapping("jobs/delete")
     public ResponseEntity<ResultErrorsResponse> checkAndDeleteNotConfirmedJobs() { // реализация пока под вопросом
 
-        return ResponseEntity.ok(employeeAndEmployerService.checkAndDeleteNotConfirmedJobs());
+        return ResponseEntity.ok(systemService.checkAndDeleteNotConfirmedJobs());
+    }
+
+    @GetMapping("professions")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<ProfessionsResponse> getProfessionList(Principal principal) {
+
+        return ResponseEntity.ok(systemService.getProfessionsList(principal));
     }
 }

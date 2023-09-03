@@ -2,10 +2,7 @@ package com.example.navigator.service;
 import com.example.navigator.api.request.DecisionRequest;
 import com.example.navigator.api.request.EmployerPassiveSearchRequest;
 import com.example.navigator.api.request.JobRequest;
-import com.example.navigator.api.response.AnswerToOfferResponse;
-import com.example.navigator.api.response.ChatMessageResponse;
-import com.example.navigator.api.response.EmployeeInfoResponse;
-import com.example.navigator.api.response.JobResponse;
+import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +47,39 @@ public class ChatMessageService {
     private final String INCORRECT_JOB_ADDRESS = "INCORRECT_JOB_ADDRESS";
     private final String TOO_MANY_ADDITIONAL_INFO = "TOO_MANY_ADDITIONAL_INFO";
     private final String SPECIFICATION_DATE_REQUIREMENT = "SPECIFICATION_DATE_REQUIREMENT";
+
+    /*
+
+    public TerminateJobResponse requestToTerminateJob(Job jobToTerminate, Principal principal) {
+        TerminateJobResponse terminateJobResponse = new TerminateJobResponse();
+        User user = userRepository.findByEmail(principal.getName()).get();
+        terminateJobResponse.setJob(jobToTerminate);
+        terminateJobResponse.setSenderName(user.getName());
+        terminateJobResponse.setSenderId(user.getId());
+        if (user.getRole().equals(Role.EMPLOYEE)) {
+            terminateJobResponse.setRecipientId(jobToTerminate.getEmployerRequests().getEmployer().getId());
+            terminateJobResponse.setRecipientName(jobToTerminate.getEmployerRequests().getEmployer().getName());
+        } else {
+            terminateJobResponse.setRecipientId(jobToTerminate.getEmployeeData().getEmployee().getId());
+            terminateJobResponse.setRecipientName(jobToTerminate.getEmployeeData().getEmployee().getName());
+        }
+
+        return terminateJobResponse;
+    }
+
+
+    public TerminateJobResponse responseToTerminateJob(TerminateJobResponse terminateJobResponse) {
+        if (terminateJobResponse.getRecipientAnswer().equals("AGREES")) {
+            jobRepository.delete(terminateJobResponse.getJob());
+            terminateJobResponse.setJob(null);
+        }
+
+        return terminateJobResponse;
+    }
+
+     */
+
+    // досрочная отмена работы с любой стороны будет выполнятся без согласия противоположной стороны с возможностью постовить голос и комент
 
     private String checkAndGetMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
         Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository

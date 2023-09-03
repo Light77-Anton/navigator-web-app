@@ -25,4 +25,8 @@ public class RequestForEmployees {
     private String languageName;
     @JsonProperty("are_languages_match")
     private byte areLanguagesMatch;
+    @JsonProperty("job_address_latitude")
+    private Double jobAddressLat;
+    @JsonProperty("job_address_longitude")
+    private Double jobAddressLon;
 }

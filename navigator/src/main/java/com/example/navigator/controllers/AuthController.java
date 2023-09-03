@@ -1,7 +1,6 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.LoginRequest;
 import com.example.navigator.api.request.RegistrationRequest;
-import com.example.navigator.api.request.StringRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.service.AuthService;
 import com.example.navigator.service.CaptchaService;

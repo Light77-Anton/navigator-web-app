@@ -1,7 +1,9 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.InProgramMessageRequest;
+import com.example.navigator.api.request.LocationRequest;
 import com.example.navigator.api.request.ProfessionRequest;
 import com.example.navigator.api.request.TextListInSpecifiedLanguageRequest;
+import com.example.navigator.api.response.ProfessionsResponse;
 import com.example.navigator.api.response.ResultErrorsResponse;
 import com.example.navigator.api.response.StringResponse;
 import com.example.navigator.api.response.TextListResponse;
@@ -31,6 +33,10 @@ public class SystemService {
     private ProfessionNameRepository professionNameRepository;
     @Autowired
     private ProfessionRepository professionRepository;
+    @Autowired
+    private LocationRepository locationRepository;
+    @Autowired
+    private JobRepository jobRepository;
 
     private final String DEFAULT_LANGUAGE = "English";
     private final String LANGUAGE_IS_NOT_EXIST = "LANGUAGE_IS_NOT_EXIST";
@@ -40,6 +46,34 @@ public class SystemService {
     private final String PROFESSION_ALREADY_EXISTS = "PROFESSION_ALREADY_EXISTS";
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
+
+    public ProfessionsResponse getProfessionsList(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).get();
+        ProfessionsResponse professionsResponse = new ProfessionsResponse();
+        professionsResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getInterfaceLanguage())
+                .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
+
+        return professionsResponse;
+    }
+
+    //@Scheduled(fixedRate = 150000) // под вопросом,возможно это можно будет реализовать на фронте
+    public ResultErrorsResponse checkAndDeleteNotConfirmedJobs() {
+        jobRepository.deleteAllNotConfirmedJobsByExpirationTime(System.currentTimeMillis());
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        resultErrorsResponse.setResult(true);
+
+        return resultErrorsResponse;
+    }
+
+
+    public ResultErrorsResponse updateLocation(long locationId, LocationRequest locationRequest) {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        resultErrorsResponse.setResult(true);
+        locationRepository.updateLocation(locationRequest.getLatitude(), locationRequest.getLongitude(),
+                locationRequest.getCity(), locationRequest.getCountry(), locationId);
+
+        return resultErrorsResponse;
+    }
 
     public TextListResponse getLanguagesList() {
         TextListResponse textListResponse = new TextListResponse();
@@ -167,7 +201,7 @@ public class SystemService {
         return resultErrorsResponse;
     }
 
-    private String checkAndGetMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
+    public String checkAndGetMessageInSpecifiedLanguage(String codeName, String interfaceLanguage) {
         Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository
                 .findByCodeNameAndLanguage(codeName, interfaceLanguage);
         if (inProgramMessage.isPresent()) {
