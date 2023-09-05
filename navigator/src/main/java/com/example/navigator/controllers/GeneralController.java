@@ -222,4 +222,11 @@ public class GeneralController {
 
         return ResponseEntity.ok(systemService.getProfessionsList(principal));
     }
+
+    @GetMapping("user/get")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<UserInfoResponse> getUser(Principal principal) {
+
+        return ResponseEntity.ok(profileService.getUserInfo(principal));
+    }
 }

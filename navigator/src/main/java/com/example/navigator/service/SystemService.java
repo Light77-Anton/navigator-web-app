@@ -50,7 +50,7 @@ public class SystemService {
     public ProfessionsResponse getProfessionsList(Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).get();
         ProfessionsResponse professionsResponse = new ProfessionsResponse();
-        professionsResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getInterfaceLanguage())
+        professionsResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getEndonymInterfaceLanguage())
                 .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
 
         return professionsResponse;
@@ -116,14 +116,14 @@ public class SystemService {
         Optional<Profession> profession = professionRepository.findById(professionRequest.getProfessionId());
         Optional<Language> language = languageRepository.findByName(professionRequest.getLanguage());
         if (language.isEmpty()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(APP_DOES_NOT_HAVE_LANGUAGE, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(APP_DOES_NOT_HAVE_LANGUAGE, user.getEndonymInterfaceLanguage()));
         }
         if (profession.isEmpty()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, user.getEndonymInterfaceLanguage()));
         }
         if (professionNameRepository.findByNameAndLanguage(professionRequest.getProfession(),
                 professionRequest.getLanguage()).isPresent()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_ALREADY_EXISTS, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_ALREADY_EXISTS, user.getEndonymInterfaceLanguage()));
         }
         if (!errors.isEmpty()) {
             resultErrorsResponse.setErrors(errors);
@@ -157,7 +157,7 @@ public class SystemService {
         List<String> errors = new ArrayList<>();
         User user = userRepository.findByEmail(principal.getName()).get();
         if (messageCodeNameRepository.findByName(codeName).isPresent()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(CODE_NAME_EXISTS_ALREADY, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(CODE_NAME_EXISTS_ALREADY, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
             return resultErrorsResponse;
         }
@@ -177,17 +177,17 @@ public class SystemService {
         String message = inProgramMessageRequest.getMessage();
         String codeName = inProgramMessageRequest.getCodeName();
         if (languageRepository.findByName(language).isEmpty()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(LANGUAGE_IS_NOT_EXIST, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(LANGUAGE_IS_NOT_EXIST, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
             return resultErrorsResponse;
         }
         if (messageCodeNameRepository.findByName(codeName).isEmpty()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(CODE_NAME_IS_NOT_EXIST, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(CODE_NAME_IS_NOT_EXIST, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
             return resultErrorsResponse;
         }
         if (inProgramMessageRepository.findByCodeNameAndLanguage(codeName, language).isPresent()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(IN_PROGRAM_MESSAGE_EXISTS_ALREADY, user.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(IN_PROGRAM_MESSAGE_EXISTS_ALREADY, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
             return resultErrorsResponse;
         }

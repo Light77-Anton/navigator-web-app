@@ -140,7 +140,7 @@ public class ChatMessageService {
         User employee = userRepository.findByEmail(principal.getName()).get();
         for (Job job : employee.getEmployeeData().getJobs()) {
             if (job.getStatus().equals("NOT CONFIRMED")) {
-                employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employee.getInterfaceLanguage()));
+                employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employee.getEndonymInterfaceLanguage()));
             }
         }
         List<Profession> professions = employee.getEmployeeData().getProfessions();
@@ -152,7 +152,7 @@ public class ChatMessageService {
         Optional<EmployerPassiveSearchData> employerPassiveSearchData = employerPassiveSearchDataRepository
                 .findById(employerPassiveSearchRequest.getId());
         if (employerPassiveSearchData.isEmpty()) {
-            employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(OFFER_IS_NOT_EXIST, employee.getInterfaceLanguage()));
+            employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(OFFER_IS_NOT_EXIST, employee.getEndonymInterfaceLanguage()));
             return employeeInfoResponse;
         }
         String jobAddress = employerPassiveSearchData.get().getJobAddress();
@@ -197,11 +197,11 @@ public class ChatMessageService {
         Long lowestBorderTimestamp = jobRequest.getLowestBorderTimestamp();
         Long highestBorderTimestamp = jobRequest.getHighestBorderTimestamp();
         if (employee.isEmpty()) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
         }
         for (Job job : employee.get().getEmployeeData().getJobs()) {
             if (job.getStatus().equals("NOT CONFIRMED")) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employer.getInterfaceLanguage()));
+                errors.add(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employer.getEndonymInterfaceLanguage()));
             }
         }
         List<Profession> professions = new ArrayList<>();
@@ -209,24 +209,24 @@ public class ChatMessageService {
             for (String professionName : professionsNames) {
                 Optional<ProfessionName> profession = professionNameRepository.findByName(professionName);
                 if (profession.isEmpty()) {
-                    errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getInterfaceLanguage()));
+                    errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
                 } else {
                     professions.add(profession.get().getProfession());
                 }
             }
         } else {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_SPECIFICATION_REQUIREMENT, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_SPECIFICATION_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
         }
         if (jobAddress == null || jobAddress.length() > 50) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getEndonymInterfaceLanguage()));
         }
         if (info != null) {
             if (info.length() > 50) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getInterfaceLanguage()));
+                errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getEndonymInterfaceLanguage()));
             }
         }
         if (timestamp == null && (lowestBorderTimestamp == null && highestBorderTimestamp == null)) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
         }
         if (!errors.isEmpty()) {
             jobResponse.setErrors(errors);

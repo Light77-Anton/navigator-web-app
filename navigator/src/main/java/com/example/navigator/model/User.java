@@ -28,7 +28,7 @@ public class User {
     private List<Language> communicationLanguages;
 
     @Column(name = "interface_language", nullable = false)
-    private String interfaceLanguage;
+    private String endonymInterfaceLanguage;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Vote> votes;
@@ -113,6 +113,10 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private Location location;
+
+    public String getRoleString() {
+        return role;
+    }
 
     public Role getRole() {
         if (role.equals("Employer")) {

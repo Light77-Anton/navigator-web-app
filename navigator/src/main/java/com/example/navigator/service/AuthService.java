@@ -86,7 +86,7 @@ public class AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
         if (userRepository.userIsBlocked(currentUser.getId()) == 1) {
             Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository.findByCodeNameAndLanguage
-                    (ACCOUNT_IS_BANNED_MESSAGE_CODE, currentUser.getInterfaceLanguage());
+                    (ACCOUNT_IS_BANNED_MESSAGE_CODE, currentUser.getEndonymInterfaceLanguage());
             if (inProgramMessage.isPresent()) {
                 loginResponse.setBlockMessage(inProgramMessage.get().getMessage());
             } else {
@@ -191,7 +191,7 @@ public class AuthService {
         List<Language> languages = new ArrayList<>();
         languages.add(languageRepository.findByName(registrationRequest.getCommunicationLanguage()).get());
         user.setCommunicationLanguages(languages);
-        user.setInterfaceLanguage(registrationRequest.getInterfaceLanguage());
+        user.setEndonymInterfaceLanguage(registrationRequest.getInterfaceLanguage());
         user.setEmail(registrationRequest.getEmail());
         user.setName(registrationRequest.getName());
         user.setPassword(securityConfig.passwordEncoder().encode(registrationRequest.getPassword()));

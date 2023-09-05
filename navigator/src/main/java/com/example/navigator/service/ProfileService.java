@@ -86,13 +86,39 @@ public class ProfileService {
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String NO_INFO_EMPLOYEE = "NO_INFO_EMPLOYEE";
 
+    public UserInfoResponse getUserInfo(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName()).get();
+        UserInfoResponse userInfoResponse = new UserInfoResponse();
+        userInfoResponse.setAvatar(user.getAvatar());
+        userInfoResponse.setBlocked(user.isBlocked());
+        userInfoResponse.setEmail(user.getEmail());
+        userInfoResponse.setLocation(user.getLocation());
+        userInfoResponse.setRole(user.getRoleString());
+        userInfoResponse.setName(user.getName());
+        userInfoResponse.setCommunicationLanguages(user.getCommunicationLanguages());
+        userInfoResponse.setPhone(user.getPhone());
+        userInfoResponse.setEmployeeData(user.getEmployeeData());
+        userInfoResponse.setEmployerRequests(user.getEmployerRequests());
+        userInfoResponse.setRanking(user.getRanking());
+        userInfoResponse.setBlackList(user.getBlackList());
+        userInfoResponse.setEndonymInterfaceLanguage(user.getEndonymInterfaceLanguage());
+        userInfoResponse.setFavorites(user.getFavorites());
+        userInfoResponse.setLastRequest(user.getLastRequest());
+        userInfoResponse.setVotes(user.getVotes());
+        userInfoResponse.setRegTime(user.getRegTime());
+        userInfoResponse.setSocialNetworksLinks(user.getSocialNetworksLinks());
+        userInfoResponse.setLocation(user.getLocation());
+
+        return userInfoResponse;
+    }
+
     public EmployeeInfoResponse getEmployeeInfo(long id, Principal principal) {
         User employer = userRepository.findByEmail(principal.getName()).get();
         EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
         Optional<User> employee = userRepository.findById(id);
         if (employee.isEmpty() || !employee.get().getRole().equals(Role.EMPLOYEE)) {
             employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (NO_INFO_EMPLOYEE, employer.getInterfaceLanguage()));
+                    (NO_INFO_EMPLOYEE, employer.getEndonymInterfaceLanguage()));
             return employeeInfoResponse;
         }
         User user = employee.get();
@@ -121,7 +147,7 @@ public class ProfileService {
         StringResponse stringResponse = new StringResponse();
         user.setActivated(true);
         stringResponse.setString(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_LOGIN
-                , user.getInterfaceLanguage()));
+                , user.getEndonymInterfaceLanguage()));
 
         return stringResponse;
     }
@@ -132,7 +158,7 @@ public class ProfileService {
         User user = userRepository.findByEmail(principal.getName()).get();
         if (user.getRole().equals(Role.EMPLOYEE)) {
             if (user.getEmployeeData().getJobs() != null) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(MODERATOR_SETTING_REQUIREMENT, user.getInterfaceLanguage()));
+                errors.add(checkAndGetMessageInSpecifiedLanguage(MODERATOR_SETTING_REQUIREMENT, user.getEndonymInterfaceLanguage()));
                 resultErrorsResponse.setErrors(errors);
                 return resultErrorsResponse;
             }
@@ -141,7 +167,7 @@ public class ProfileService {
         }
         if (user.getRole().equals(Role.EMPLOYER)) {
             if (user.getEmployerRequests().getEmployerPassiveSearchData() != null || !user.getEmployerRequests().getJobs().isEmpty()) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(MODERATOR_SETTING_REQUIREMENT, user.getInterfaceLanguage()));
+                errors.add(checkAndGetMessageInSpecifiedLanguage(MODERATOR_SETTING_REQUIREMENT, user.getEndonymInterfaceLanguage()));
                 resultErrorsResponse.setErrors(errors);
                 return resultErrorsResponse;
             }
@@ -235,7 +261,7 @@ public class ProfileService {
             favoriteToUserRepository.delete(user.getId(), favoriteId);
             resultErrorsResponse.setResult(true);
         } else {
-            List<String> errors = List.of(checkAndGetMessageInSpecifiedLanguage(SOMETHING_IS_WRONG, user.getInterfaceLanguage()));
+            List<String> errors = List.of(checkAndGetMessageInSpecifiedLanguage(SOMETHING_IS_WRONG, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
         }
 
@@ -255,7 +281,7 @@ public class ProfileService {
             bannedToUserRepository.delete(user.getId(), bannedId);
             resultErrorsResponse.setResult(true);
         } else {
-            List<String> errors = List.of(checkAndGetMessageInSpecifiedLanguage(SOMETHING_IS_WRONG, user.getInterfaceLanguage()));
+            List<String> errors = List.of(checkAndGetMessageInSpecifiedLanguage(SOMETHING_IS_WRONG, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
         }
 
@@ -270,7 +296,7 @@ public class ProfileService {
             if (user.get().getRole().equals(Role.EMPLOYEE)) {
                 if (user.get().getEmployeeData().getJobs()!= null) {
                     deleteAccountResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                            (ACCOUNT_DELETION_REQUIREMENT, user.get().getInterfaceLanguage()));
+                            (ACCOUNT_DELETION_REQUIREMENT, user.get().getEndonymInterfaceLanguage()));
                     return deleteAccountResponse;
                 }
                 employeeDataRepository.delete(user.get().getEmployeeData());
@@ -279,7 +305,7 @@ public class ProfileService {
                 if (user.get().getEmployerRequests().getJobs() != null &&
                         user.get().getEmployerRequests().getEmployerPassiveSearchData() != null) {
                     deleteAccountResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                            (ACCOUNT_DELETION_REQUIREMENT, user.get().getInterfaceLanguage()));
+                            (ACCOUNT_DELETION_REQUIREMENT, user.get().getEndonymInterfaceLanguage()));
                     return deleteAccountResponse;
                 }
                 employerRequestsRepository.delete(user.get().getEmployerRequests());
@@ -382,35 +408,35 @@ public class ProfileService {
         String phone = profileRequest.getPhone();
         String password = profileRequest.getPassword();
         if (!checkName(name)) {
-            errorsList.add(checkAndGetMessageInSpecifiedLanguage(NAMES_ARE_INCORRECT, user.getInterfaceLanguage()));
+            errorsList.add(checkAndGetMessageInSpecifiedLanguage(NAMES_ARE_INCORRECT, user.getEndonymInterfaceLanguage()));
         }
         if (!phone.matches(PHONE_NUMBER_PATTERN)) {
-            errorsList.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_PHONE, user.getInterfaceLanguage()));
+            errorsList.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_PHONE, user.getEndonymInterfaceLanguage()));
         }
         if (password.length() < 6) {
-            errorsList.add(checkAndGetMessageInSpecifiedLanguage(TOO_SHORT_PASSWORD, user.getInterfaceLanguage()));
+            errorsList.add(checkAndGetMessageInSpecifiedLanguage(TOO_SHORT_PASSWORD, user.getEndonymInterfaceLanguage()));
         }
         if (profileRequest.getSocialNetworksLinks().length() > 30) {
             errorsList.add(SOCIAL_NETWORKS_TEXT_TOO_LONG);
         }
         if (profileRequest.getCommunicationLanguages() == null) {
             errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                    (COMMUNICATION_LANGUAGE_REQUIREMENT, user.getInterfaceLanguage()));
+                    (COMMUNICATION_LANGUAGE_REQUIREMENT, user.getEndonymInterfaceLanguage()));
         } else {
             for (String languageName : profileRequest.getCommunicationLanguages()) {
                 if (languageRepository.findByName(languageName).isEmpty()) {
                     errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                            (COMMUNICATION_LANGUAGE_REQUIREMENT, user.getInterfaceLanguage()) + languageName);
+                            (COMMUNICATION_LANGUAGE_REQUIREMENT, user.getEndonymInterfaceLanguage()) + languageName);
                 }
             }
         }
         if (profileRequest.getInterfaceLanguage() == null) {
             errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                    (INTERFACE_LANGUAGE_REQUIREMENT, user.getInterfaceLanguage()));
+                    (INTERFACE_LANGUAGE_REQUIREMENT, user.getEndonymInterfaceLanguage()));
         } else {
             if (languageRepository.findByName(profileRequest.getInterfaceLanguage()).isEmpty()) {
                 errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                        (APP_DOES_NOT_HAVE_LANGUAGE, user.getInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
+                        (APP_DOES_NOT_HAVE_LANGUAGE, user.getEndonymInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
             }
         }
         if (!errorsList.isEmpty()) {
@@ -422,7 +448,7 @@ public class ProfileService {
             languages.add(languageRepository.findByName(lang).get());
         }
         user.setCommunicationLanguages(languages);
-        user.setInterfaceLanguage(profileRequest.getInterfaceLanguage());
+        user.setEndonymInterfaceLanguage(profileRequest.getInterfaceLanguage());
         user.setName(name);
         user.setPhone(phone);
         user.setPassword(securityConfig.passwordEncoder().encode(password));
@@ -442,7 +468,7 @@ public class ProfileService {
                     String[] array = professionAndExtendedInfo.split(":", 2);
                     if (professionNameRepository.findByName(array[0]).isEmpty()) {
                         errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                                (PROFESSION_NOT_FOUND, user.getInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
+                                (PROFESSION_NOT_FOUND, user.getEndonymInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
                         resultErrorsResponse.setErrors(errorsList);
                         return resultErrorsResponse;
                     }
@@ -459,7 +485,7 @@ public class ProfileService {
             if (profileRequest.getEmployeesWorkRequirements() != null) {
                 if (profileRequest.getEmployeesWorkRequirements().length() > 30) {
                     errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                            (EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG, user.getInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
+                            (EMPLOYEES_WORK_REQUIREMENTS_TEXT_TOO_LONG, user.getEndonymInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
                     resultErrorsResponse.setErrors(errorsList);
                     return resultErrorsResponse;
                 }
@@ -483,10 +509,10 @@ public class ProfileService {
             return avatarResponse;
         }
         if (avatar.getSize() > UPLOAD_LIMIT) {
-           errorsList.add(checkAndGetMessageInSpecifiedLanguage(AVATAR_SIZE, user.getInterfaceLanguage()));
+           errorsList.add(checkAndGetMessageInSpecifiedLanguage(AVATAR_SIZE, user.getEndonymInterfaceLanguage()));
         }
         if (!avatar.getOriginalFilename().endsWith("jpg") && !avatar.getOriginalFilename().endsWith("png")) {
-            errorsList.add(checkAndGetMessageInSpecifiedLanguage(AVATAR_FORMAT, user.getInterfaceLanguage()));
+            errorsList.add(checkAndGetMessageInSpecifiedLanguage(AVATAR_FORMAT, user.getEndonymInterfaceLanguage()));
         }
         if (!errorsList.isEmpty()) {
             avatarResponse.setErrors(errorsList);
@@ -534,7 +560,7 @@ public class ProfileService {
     public StringResponse getUsersInterfaceLanguage(Principal principal) {
         User user = userRepository.findByEmail(principal.getName()).get();
         StringResponse stringResponse = new StringResponse();
-        stringResponse.setString(user.getInterfaceLanguage());
+        stringResponse.setString(user.getEndonymInterfaceLanguage());
 
         return stringResponse;
     }

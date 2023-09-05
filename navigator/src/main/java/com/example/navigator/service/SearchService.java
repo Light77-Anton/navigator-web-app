@@ -1,7 +1,6 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.JobRequest;
 import com.example.navigator.api.request.RequestForEmployees;
-import com.example.navigator.api.request.VoteRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
@@ -69,7 +68,7 @@ public class SearchService {
         User user = userRepository.findByEmail(principal.getName()).get();
         int limit = requestForEmployees.getLimit();
         if (limit <= 0) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getInterfaceLanguage()));
+            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
         ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
@@ -139,7 +138,7 @@ public class SearchService {
             idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
             if (idList.isEmpty()) {
                 employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                        (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
+                        (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
                 return employeesListResponse;
             }
             user.setLastRequest(professionName + "-" + limit + "-" + country + "-" + city);
@@ -203,7 +202,7 @@ public class SearchService {
         idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
         if (idList.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
+                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
         user.setLastRequest(professionName + "-" + limit + "-" + country);
@@ -222,7 +221,7 @@ public class SearchService {
         ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
         if (limit <= 0) {
             employeesListResponse.setError
-                    (checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getInterfaceLanguage()));
+                    (checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
         double jobAddressLat = requestForEmployees.getJobAddressLat();
@@ -245,7 +244,7 @@ public class SearchService {
         List<Location> locations = employeeList.stream().map(User::getLocation).collect(Collectors.toList());
         if (locations.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
+                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
         HashMap<Location, Double> map = new HashMap<>(limit);
@@ -291,7 +290,7 @@ public class SearchService {
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
         int usersCountWithoutBlackList;
         if (limit <= 0) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getInterfaceLanguage()));
+            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
         Pageable page = PageRequest.of(0, limit);
@@ -354,7 +353,7 @@ public class SearchService {
             idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
             if (idList.isEmpty()) {
                 employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                        (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
+                        (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
                 return employeesListResponse;
             }
             user.setLastRequest(professionName + "-" + limit + "-" + country + "-" + city);
@@ -418,7 +417,7 @@ public class SearchService {
         idList = new ArrayList<>(employeeList.stream().map(User::getId).collect(Collectors.toList()));
         if (idList.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (EMPLOYEES_DOES_NOT_EXIST, user.getInterfaceLanguage()));
+                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
         user.setLastRequest(professionName + "-" + limit + "-" + country);
@@ -442,24 +441,24 @@ public class SearchService {
             for (String professionName : professionsNames) {
                 Optional<ProfessionName> profession = professionNameRepository.findByName(professionName);
                 if (profession.isEmpty()) {
-                    errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getInterfaceLanguage()));
+                    errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
                 } else {
                     professions.add(profession.get().getProfession());
                 }
             }
         } else {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_SPECIFICATION_REQUIREMENT, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_SPECIFICATION_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
         }
         if (jobAddress == null || jobAddress.length() > 50) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getEndonymInterfaceLanguage()));
         }
         if (info != null) {
             if (info.length() > 50) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getInterfaceLanguage()));
+                errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getEndonymInterfaceLanguage()));
             }
         }
         if (timestamp == null && (lowestBorderTimestamp == null && highestBorderTimestamp == null)) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getInterfaceLanguage()));
+            errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
         }
         if (!errors.isEmpty()) {
             resultErrorsResponse.setErrors(errors);
