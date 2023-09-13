@@ -21,7 +21,7 @@ public class Profession {
     @JoinTable(name = "profession_to_user",
             joinColumns = {@JoinColumn(name = "profession_id")},
             inverseJoinColumns = {@JoinColumn(name = "employee_id")})
-    private List<User> employees;
+    private List<ProfessionToUser> professionToUserList;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "professions_to_job",

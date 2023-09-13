@@ -65,8 +65,8 @@ public class ChatController {
 
     @MessageMapping("employer/offer")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<JobResponse> sendEmployersOffer(@Payload JobRequest jobRequest, Principal principal) {
-        JobResponse jobResponse = chatMessageService.sendEmployerOffer(jobRequest, principal);
+    public ResponseEntity<JobResponse> sendEmployersOffer(@Payload JobRequest jobRequest) {
+        JobResponse jobResponse = chatMessageService.sendEmployerOffer(jobRequest);
         if (jobResponse.isResult()) {
             messagingTemplate.convertAndSendToUser(jobRequest.getUserId().toString(), URL, jobResponse.getJob());
         }
@@ -77,9 +77,9 @@ public class ChatController {
     @MessageMapping("employee/offer")
     @PreAuthorize("hasAuthority('user:work')")
     public ResponseEntity<EmployeeInfoResponse> sendEmployeesOffer(
-            @Payload EmployerPassiveSearchRequest employerPassiveSearchRequest, Principal principal) {
+            @Payload EmployerPassiveSearchRequest employerPassiveSearchRequest) {
         EmployeeInfoResponse employeeInfoResponse = chatMessageService
-                .sendEmployeesOffer(employerPassiveSearchRequest, principal);
+                .sendEmployeesOffer(employerPassiveSearchRequest);
         if (employeeInfoResponse.getError() == null) {
             messagingTemplate.convertAndSendToUser
                     (employeeInfoResponse.getToEmployerId().toString(), URL, employeeInfoResponse);

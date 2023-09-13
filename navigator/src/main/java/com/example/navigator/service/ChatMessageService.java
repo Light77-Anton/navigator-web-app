@@ -6,6 +6,7 @@ import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.time.Instant;
@@ -135,15 +136,16 @@ public class ChatMessageService {
         return answerToOfferResponse;
     }
 
-    public EmployeeInfoResponse sendEmployeesOffer (EmployerPassiveSearchRequest employerPassiveSearchRequest, Principal principal) {
+    public EmployeeInfoResponse sendEmployeesOffer (EmployerPassiveSearchRequest employerPassiveSearchRequest) {
         EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
-        User employee = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User employee = userRepository.findByEmail(username).get();
         for (Job job : employee.getEmployeeData().getJobs()) {
             if (job.getStatus().equals("NOT CONFIRMED")) {
                 employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employee.getEndonymInterfaceLanguage()));
             }
         }
-        List<Profession> professions = employee.getEmployeeData().getProfessions();
+        List<Profession> professions = employee.getEmployeeData().getProfessionToUserList();
         String name = employee.getName();
         String email = employee.getEmail();
         double ranking = employee.getRanking();
@@ -185,10 +187,11 @@ public class ChatMessageService {
         return employeeInfoResponse;
     }
 
-    public JobResponse sendEmployerOffer(JobRequest jobRequest, Principal principal) {
+    public JobResponse sendEmployerOffer(JobRequest jobRequest) {
         JobResponse jobResponse = new JobResponse();
         List<String> errors = new ArrayList<>();
-        User employer = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User employer = userRepository.findByEmail(username).get();
         Optional<User> employee = userRepository.findById(jobRequest.getUserId());
         List<String> professionsNames = jobRequest.getProfessions();
         String jobAddress = jobRequest.getJobAddress();

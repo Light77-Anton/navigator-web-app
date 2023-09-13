@@ -9,6 +9,7 @@ import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
@@ -16,7 +17,6 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Principal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +31,8 @@ public class ProfileService {
     private ProfessionRepository professionRepository;
     @Autowired
     private LanguageRepository languageRepository;
+    @Autowired
+    private LanguageToUserRepository languageToUserRepository;
     @Autowired
     private EmployeeDataRepository employeeDataRepository;
     @Autowired
@@ -86,8 +88,9 @@ public class ProfileService {
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String NO_INFO_EMPLOYEE = "NO_INFO_EMPLOYEE";
 
-    public UserInfoResponse getUserInfo(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public UserInfoResponse getUserInfo() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         UserInfoResponse userInfoResponse = new UserInfoResponse();
         userInfoResponse.setAvatar(user.getAvatar());
         userInfoResponse.setBlocked(user.isBlocked());
@@ -112,8 +115,9 @@ public class ProfileService {
         return userInfoResponse;
     }
 
-    public EmployeeInfoResponse getEmployeeInfo(long id, Principal principal) {
-        User employer = userRepository.findByEmail(principal.getName()).get();
+    public EmployeeInfoResponse getEmployeeInfo(long id) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User employer = userRepository.findByEmail(username).get();
         EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
         Optional<User> employee = userRepository.findById(id);
         if (employee.isEmpty() || !employee.get().getRole().equals(Role.EMPLOYEE)) {
@@ -152,10 +156,11 @@ public class ProfileService {
         return stringResponse;
     }
 
-    public ResultErrorsResponse setModerator(Principal principal) {
+    public ResultErrorsResponse setModerator() {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         if (user.getRole().equals(Role.EMPLOYEE)) {
             if (user.getEmployeeData().getJobs() != null) {
                 errors.add(checkAndGetMessageInSpecifiedLanguage(MODERATOR_SETTING_REQUIREMENT, user.getEndonymInterfaceLanguage()));
@@ -180,9 +185,10 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public JobListResponse getJobList(Principal principal) {
+    public JobListResponse getJobList() {
         JobListResponse jobListResponse = new JobListResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         List<Job> jobs = user.getEmployerRequests().getJobs();
         jobListResponse.setJobCount(jobs.size());
         jobListResponse.setJobs(jobs);
@@ -195,9 +201,10 @@ public class ProfileService {
         return userRepository.findById(recipientId).get();
     }
 
-    public User getSender(Principal principal) {
+    public User getSender() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        return userRepository.findByEmail(principal.getName()).get();
+        return userRepository.findByEmail(username).get();
     }
 
     public VoteResponse vote(VoteRequest voteRequest) {
@@ -223,9 +230,10 @@ public class ProfileService {
         return voteResponse;
     }
 
-    public ResultErrorsResponse comment(CommentRequest commentRequest, Principal principal) {
+    public ResultErrorsResponse comment(CommentRequest commentRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         Optional<Comment> comment = commentRepository.findByToIdAndFromId(user.getId(), commentRequest.getUserId());
         resultErrorsResponse.setResult(true);
         if (comment.isPresent()) {
@@ -248,9 +256,10 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse changeFavoritesList(long favoriteId, String decision, Principal principal) {
+    public ResultErrorsResponse changeFavoritesList(long favoriteId, String decision) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         if (decision.equals("ADD") && userRepository.findById(favoriteId).isPresent()) {
             FavoriteToUser favoriteToUser = new FavoriteToUser();
             favoriteToUser.setUserId(user.getId());
@@ -268,9 +277,10 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse changeBlackList(long bannedId, String decision, Principal principal) {
+    public ResultErrorsResponse changeBlackList(long bannedId, String decision) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         if (decision.equals("ADD") && userRepository.findById(bannedId).isPresent()) {
             BannedToUser bannedToUser = new BannedToUser();
             bannedToUser.setUserId(user.getId());
@@ -288,9 +298,10 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public DeleteAccountResponse deleteAccount(Principal principal) {
+    public DeleteAccountResponse deleteAccount() {
         DeleteAccountResponse deleteAccountResponse = new DeleteAccountResponse();
-        Optional<User> user = userRepository.findByEmail(principal.getName());
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> user = userRepository.findByEmail(username);
         if (user.isPresent()) {
             deleteAccountResponse.setId(user.get().getId());
             if (user.get().getRole().equals(Role.EMPLOYEE)) {
@@ -400,8 +411,9 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse checkAndChangeProfile(ProfileRequest profileRequest, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public ResultErrorsResponse checkAndChangeProfile(ProfileRequest profileRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errorsList = new ArrayList<>();
         String name = profileRequest.getName();
@@ -462,25 +474,35 @@ public class ProfileService {
             } else {
                 user.getEmployeeData().setStatus(status);
             }
-            List<Profession> professions = new ArrayList<>();
+            List<ProfessionToUser> professionsToUsersList = new ArrayList<>();
             if (profileRequest.getProfessionsAndExtendedInfo() != null) {
+                List<ProfessionToUser> oldProfessionsToUsersList = user.getEmployeeData().getProfessionToUserList();
+                professionToUserRepository.deleteAllByEmployeeId(user.getId());
                 for (String professionAndExtendedInfo : profileRequest.getProfessionsAndExtendedInfo()) {
                     String[] array = professionAndExtendedInfo.split(":", 2);
                     if (professionNameRepository.findByName(array[0]).isEmpty()) {
                         errorsList.add(checkAndGetMessageInSpecifiedLanguage
                                 (PROFESSION_NOT_FOUND, user.getEndonymInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
                         resultErrorsResponse.setErrors(errorsList);
+                        user.getEmployeeData().setProfessionToUserList(oldProfessionsToUsersList);
                         return resultErrorsResponse;
                     }
                     Profession profession = professionNameRepository.findByName(array[0]).get().getProfession();
-                    professions.add(profession);
+                    ProfessionToUser professionToUser = new ProfessionToUser();
+                    professionToUser.setEmployeeId(user.getId());
+                    professionToUser.setProfessionId(profession.getId());
                     if (array[1] != null) {
                         if (!array[1].matches("\\s+")) {
-                            professionToUserRepository.setExtendedInfoByEmployeeAndProfessionId(user.getId(),
-                                    profession.getId(), array[1]);
+                            professionToUser.setExtendedInfoFromEmployee(array[1]);
+                            professionsToUsersList.add(professionToUser);
+                        } else {
+                            professionsToUsersList.add(professionToUser);
                         }
+                    } else {
+                        professionsToUsersList.add(professionToUser);
                     }
                 }
+                professionToUserRepository.saveAll(professionsToUsersList);
             }
             if (profileRequest.getEmployeesWorkRequirements() != null) {
                 if (profileRequest.getEmployeesWorkRequirements().length() > 30) {
@@ -490,7 +512,7 @@ public class ProfileService {
                     return resultErrorsResponse;
                 }
             }
-            user.getEmployeeData().setProfessions(professions);
+            user.getEmployeeData().setProfessionToUserList(professionsToUsersList);
             user.getEmployeeData().setEmployeesWorkRequirements(profileRequest.getEmployeesWorkRequirements());
             user.getEmployeeData().setDriverLicense(profileRequest.isDriverLicense());
             user.getEmployeeData().setAuto(profileRequest.isAuto());
@@ -501,8 +523,9 @@ public class ProfileService {
         return resultErrorsResponse;
     }
 
-    public AvatarResponse writeAvatar(MultipartFile avatar, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public AvatarResponse writeAvatar(MultipartFile avatar) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         AvatarResponse avatarResponse = new AvatarResponse();
         List<String> errorsList = new ArrayList<>();
         if (avatar.isEmpty()) {
@@ -557,8 +580,9 @@ public class ProfileService {
         return inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage();
     }
 
-    public StringResponse getUsersInterfaceLanguage(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public StringResponse getUsersInterfaceLanguage() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         StringResponse stringResponse = new StringResponse();
         stringResponse.setString(user.getEndonymInterfaceLanguage());
 

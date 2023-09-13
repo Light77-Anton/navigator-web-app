@@ -27,12 +27,9 @@ public class AuthController {
     }
 
     @GetMapping("check")
-    public ResponseEntity<LoginResponse> authCheck(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.ok(new LoginResponse());
-        }
+    public ResponseEntity<LoginResponse> authCheck() {
 
-        return ResponseEntity.ok(authService.getAuthCheckResponse(principal));
+        return ResponseEntity.ok(authService.getAuthCheckResponse());
     }
 
     @PostMapping("login")
@@ -66,9 +63,9 @@ public class AuthController {
 
     @DeleteMapping("delete")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<DeleteAccountResponse> deleteAccount(Principal principal) { // по идее сначала должен быть вызван logout
+    public ResponseEntity<DeleteAccountResponse> deleteAccount() { // по идее сначала должен быть вызван logout
 
-        return ResponseEntity.ok(profileService.deleteAccount(principal));
+        return ResponseEntity.ok(profileService.deleteAccount());
     }
 
     @PutMapping("account/activate/{id}")

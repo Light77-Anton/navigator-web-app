@@ -12,9 +12,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -80,8 +83,17 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    public LoginResponse getAuthCheckResponse(Principal principal) {
+    public LoginResponse getAuthCheckResponse() {
         LoginResponse loginResponse = new LoginResponse();
+        if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            User currentUser = userRepository.findByEmail(username).get();
+            loginResponse.setResult(true);
+            loginResponse.setUserId(currentUser.getId());
+            loginResponse.setRole(currentUser.getRoleString());
+            return loginResponse;
+        }
+        /*
         User currentUser = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
         if (userRepository.userIsBlocked(currentUser.getId()) == 1) {
@@ -96,8 +108,7 @@ public class AuthService {
             loginResponse.setUserId(currentUser.getId());
             return loginResponse;
         }
-        loginResponse.setResult(true);
-        loginResponse.setUserId(currentUser.getId());
+         */
 
         return loginResponse;
     }
@@ -110,11 +121,9 @@ public class AuthService {
             return loginResponse;
         } else if (!requestedUser.get().isActivated()) {
             loginResponse.setBlockMessage(checkAndGetMessageInSpecifiedLanguage(ACCOUNT_NOT_ACTIVATED, DEFAULT_LANGUAGE));
-
             return loginResponse;
         } else if(requestedUser.get().isBlocked()) {
             loginResponse.setBlockMessage(checkAndGetMessageInSpecifiedLanguage(ACCOUNT_IS_BANNED_MESSAGE_CODE, DEFAULT_LANGUAGE));
-
             return loginResponse;
         } else {
             Authentication auth = authenticationManager
@@ -127,6 +136,7 @@ public class AuthService {
             User currentUser = userRepository.findByEmail(user.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException(user.getUsername()));
             loginResponse.setUserId(currentUser.getId());
+            loginResponse.setRole(currentUser.getRoleString());
 
             return loginResponse;
         }

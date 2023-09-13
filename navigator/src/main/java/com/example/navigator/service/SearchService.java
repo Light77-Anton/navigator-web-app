@@ -63,9 +63,10 @@ public class SearchService {
     private final String OFFER_IS_NOT_EXIST = "OFFER_IS_NOT_EXIST";
     private final String USER_IS_TEMPORARILY_BUSY = "USER_IS_TEMPORARILY_BUSY";
 
-    public EmployeesListResponse getEmployeesOfChosenProfession(RequestForEmployees requestForEmployees, Principal principal) {
+    public EmployeesListResponse getEmployeesOfChosenProfession(RequestForEmployees requestForEmployees) {
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         int limit = requestForEmployees.getLimit();
         if (limit <= 0) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
@@ -211,8 +212,9 @@ public class SearchService {
         return employeesListResponse;
     }
 
-    public EmployeesListResponse getTheNearestEmployeesInfo(RequestForEmployees requestForEmployees, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public EmployeesListResponse getTheNearestEmployeesInfo(RequestForEmployees requestForEmployees) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
         int limit = requestForEmployees.getLimit();
         String language = requestForEmployees.getLanguageName();
@@ -278,8 +280,9 @@ public class SearchService {
         return employeesListResponse;
     }
 
-    public EmployeesListResponse getTheBestEmployees(RequestForEmployees requestForEmployees, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public EmployeesListResponse getTheBestEmployees(RequestForEmployees requestForEmployees) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         int limit = requestForEmployees.getLimit();
         ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
         String country = requestForEmployees.getCountry();
@@ -426,10 +429,11 @@ public class SearchService {
         return employeesListResponse;
     }
 
-    public ResultErrorsResponse setPassiveSearch(JobRequest jobRequest, Principal principal) {
+    public ResultErrorsResponse setPassiveSearch(JobRequest jobRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
-        User employer = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User employer = userRepository.findByEmail(username).get();
         List<String> professionsNames = jobRequest.getProfessions();
         String jobAddress = jobRequest.getJobAddress();
         String info = jobRequest.getPaymentAndAdditionalInfo();

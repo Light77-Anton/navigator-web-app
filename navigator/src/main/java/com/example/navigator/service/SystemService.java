@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class SystemService {
@@ -47,8 +48,9 @@ public class SystemService {
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
 
-    public ProfessionsResponse getProfessionsList(Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public ProfessionsResponse getProfessionsList() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         ProfessionsResponse professionsResponse = new ProfessionsResponse();
         professionsResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getEndonymInterfaceLanguage())
                 .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
@@ -109,8 +111,9 @@ public class SystemService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse addProfessionInSpecifiedLanguage(ProfessionRequest professionRequest, Principal principal) {
-        User user = userRepository.findByEmail(principal.getName()).get();
+    public ResultErrorsResponse addProfessionInSpecifiedLanguage(ProfessionRequest professionRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
         Optional<Profession> profession = professionRepository.findById(professionRequest.getProfessionId());
@@ -152,10 +155,11 @@ public class SystemService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse addMessageCodeName(String codeName, Principal principal) {
+    public ResultErrorsResponse addMessageCodeName(String codeName) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         if (messageCodeNameRepository.findByName(codeName).isPresent()) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(CODE_NAME_EXISTS_ALREADY, user.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
@@ -169,10 +173,11 @@ public class SystemService {
         return resultErrorsResponse;
     }
 
-    public ResultErrorsResponse addInProgramMessage(InProgramMessageRequest inProgramMessageRequest, Principal principal) {
+    public ResultErrorsResponse addInProgramMessage(InProgramMessageRequest inProgramMessageRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         String language = inProgramMessageRequest.getLanguage();
         String message = inProgramMessageRequest.getMessage();
         String codeName = inProgramMessageRequest.getCodeName();

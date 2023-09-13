@@ -26,39 +26,39 @@ public class SearchController {
 
     @PostMapping("employer/search/passive")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> setPassiveSearch(@RequestBody JobRequest jobRequest, Principal principal) { //
+    public ResponseEntity<ResultErrorsResponse> setPassiveSearch(@RequestBody JobRequest jobRequest) { //
 
-        return ResponseEntity.ok(searchService.setPassiveSearch(jobRequest, principal));
+        return ResponseEntity.ok(searchService.setPassiveSearch(jobRequest));
     }
 
     @GetMapping("employees")
     @PreAuthorize("hasAuthority('user:hire')")
     public ResponseEntity<EmployeesListResponse> getEmployeesOfChosenProfession(
-            @RequestBody RequestForEmployees requestForEmployees, Principal principal) {
+            @RequestBody RequestForEmployees requestForEmployees) {
 
-        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(requestForEmployees, principal));
+        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(requestForEmployees));
     }
 
     @GetMapping("employees/nearest")
     @PreAuthorize("hasAuthority('user:hire')")
     public ResponseEntity<EmployeesListResponse> getTheNearestEmployeeOfChosenProfession(
-            @RequestBody RequestForEmployees requestForEmployees, Principal principal) {
+            @RequestBody RequestForEmployees requestForEmployees) {
 
-        return ResponseEntity.ok(searchService.getTheNearestEmployeesInfo(requestForEmployees, principal));
+        return ResponseEntity.ok(searchService.getTheNearestEmployeesInfo(requestForEmployees));
     }
 
     @GetMapping("employees/best")
     @PreAuthorize("hasAuthority('user:hire')")
     public ResponseEntity<EmployeesListResponse> getTheBestEmployees(
-            @RequestBody RequestForEmployees requestForEmployees, Principal principal) {
+            @RequestBody RequestForEmployees requestForEmployees) {
 
-        return ResponseEntity.ok(searchService.getTheBestEmployees(requestForEmployees, principal));
+        return ResponseEntity.ok(searchService.getTheBestEmployees(requestForEmployees));
     }
 
     @GetMapping("employee/info/{id}")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<EmployeeInfoResponse> getEmployeeInfo(@PathVariable long id, Principal principal) {
+    public ResponseEntity<EmployeeInfoResponse> getEmployeeInfo(@PathVariable long id) {
 
-        return ResponseEntity.ok(profileService.getEmployeeInfo(id, principal));
+        return ResponseEntity.ok(profileService.getEmployeeInfo(id));
     }
 }

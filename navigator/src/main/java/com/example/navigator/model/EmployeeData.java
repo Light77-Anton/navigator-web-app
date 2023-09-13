@@ -29,7 +29,7 @@ public class EmployeeData {
     @JoinTable(name = "profession_to_user",
             joinColumns = {@JoinColumn(name = "employee_id")},
             inverseJoinColumns = {@JoinColumn(name = "profession_id")})
-    private List<Profession> professions;
+    private List<ProfessionToUser> professionToUserList;
 
     @Column(name = "status", nullable = false)
     private String status;

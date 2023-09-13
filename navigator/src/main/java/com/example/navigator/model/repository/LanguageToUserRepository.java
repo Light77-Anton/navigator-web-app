@@ -1,16 +1,16 @@
 package com.example.navigator.model.repository;
-import com.example.navigator.model.Language;
+import com.example.navigator.model.LanguageToUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Repository
-public interface LanguageRepository extends JpaRepository<Language, Long> {
+public interface LanguageToUserRepository extends JpaRepository<LanguageToUser, Long> {
 
-    @Query(value = "SELECT l FROM com.example.navigator.model.Language AS l WHERE l.languageEndonym = :name")
-    Optional<Language> findByName(String name);
+    @Transactional
+    @Modifying
+    @Query(value = "DELETE FROM com.example.navigator.model.LanguageToUser WHERE user_id = :userId")
+    void deleteByUserId(long userId);
 }

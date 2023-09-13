@@ -52,31 +52,30 @@ public class GeneralController {
 
 
     @GetMapping("language/get")
-    public ResponseEntity<StringResponse> getUsersInterfaceLanguage(Principal principal) {
+    public ResponseEntity<StringResponse> getUsersInterfaceLanguage() {
 
-        return ResponseEntity.ok(profileService.getUsersInterfaceLanguage(principal));
+        return ResponseEntity.ok(profileService.getUsersInterfaceLanguage());
     }
 
     @PutMapping("moderator")
-    public ResponseEntity<ResultErrorsResponse> setModerator(Principal principal) { // способ становления модератором под вопросов
+    public ResponseEntity<ResultErrorsResponse> setModerator() { // способ становления модератором под вопросов
 
-        return ResponseEntity.ok(profileService.setModerator(principal));
+        return ResponseEntity.ok(profileService.setModerator());
     }
 
     @PostMapping("system/code/add")
     @PreAuthorize("hasAuthority('user:moderate')")
-    public ResponseEntity<ResultErrorsResponse> addMessageCodeName(@RequestParam(value = "code") String codeName,
-                                                                   Principal principal) {
+    public ResponseEntity<ResultErrorsResponse> addMessageCodeName(@RequestParam(value = "code") String codeName) {
 
-        return ResponseEntity.ok(systemService.addMessageCodeName(codeName, principal));
+        return ResponseEntity.ok(systemService.addMessageCodeName(codeName));
     }
 
     @PostMapping("system/message/add")
     @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<ResultErrorsResponse> addInProgramMessage(
-            @RequestBody InProgramMessageRequest inProgramMessageRequest, Principal principal) {
+            @RequestBody InProgramMessageRequest inProgramMessageRequest) {
 
-        return ResponseEntity.ok(systemService.addInProgramMessage(inProgramMessageRequest, principal));
+        return ResponseEntity.ok(systemService.addInProgramMessage(inProgramMessageRequest));
     }
 
     @PostMapping("language/add")
@@ -88,27 +87,24 @@ public class GeneralController {
 
     @PutMapping("profile/avatar")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<AvatarResponse> profileAvatar(@RequestParam(value = "avatar") MultipartFile avatar,
-                                                        Principal principal) {
+    public ResponseEntity<AvatarResponse> profileAvatar(@RequestParam(value = "avatar") MultipartFile avatar) {
 
-        return ResponseEntity.ok(profileService.writeAvatar(avatar, principal));
+        return ResponseEntity.ok(profileService.writeAvatar(avatar));
     }
 
 
     @PutMapping("profile")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<ResultErrorsResponse> profile(@RequestBody ProfileRequest profileRequest,
-                                                        Principal principal) {
+    public ResponseEntity<ResultErrorsResponse> profile(@RequestBody ProfileRequest profileRequest) {
 
-        return ResponseEntity.ok(profileService.checkAndChangeProfile(profileRequest, principal));
+        return ResponseEntity.ok(profileService.checkAndChangeProfile(profileRequest));
     }
 
     @PostMapping("professions/name/add")
     @PreAuthorize("hasAuthority('user:moderate')")
-    public ResponseEntity<ResultErrorsResponse> addProfessionInSpecifiedLanguage(@RequestBody ProfessionRequest professionRequest,
-                                                                                 Principal principal) {
+    public ResponseEntity<ResultErrorsResponse> addProfessionInSpecifiedLanguage(@RequestBody ProfessionRequest professionRequest) {
 
-        return ResponseEntity.ok(systemService.addProfessionInSpecifiedLanguage(professionRequest, principal));
+        return ResponseEntity.ok(systemService.addProfessionInSpecifiedLanguage(professionRequest));
     }
 
     @PostMapping("professions/new/add")
@@ -168,32 +164,30 @@ public class GeneralController {
 
     @PostMapping("comment")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> comment(@RequestBody CommentRequest commentRequest, Principal principal) {
+    public ResponseEntity<ResultErrorsResponse> comment(@RequestBody CommentRequest commentRequest) {
 
-        return ResponseEntity.ok(profileService.comment(commentRequest, principal));
+        return ResponseEntity.ok(profileService.comment(commentRequest));
     }
 
     @PostMapping("user/{id}/favorite/{decision}")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> favorite(@PathVariable long favoriteId,
-                                                         @PathVariable String decision, Principal principal) {
+    public ResponseEntity<ResultErrorsResponse> favorite(@PathVariable long favoriteId, @PathVariable String decision) {
 
-        return ResponseEntity.ok(profileService.changeFavoritesList(favoriteId, decision, principal));
+        return ResponseEntity.ok(profileService.changeFavoritesList(favoriteId, decision));
     }
 
     @PostMapping("user/{id}/blacklist/{decision}")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> blackList(@PathVariable long bannedId,
-                                                          @PathVariable String decision, Principal principal) {
+    public ResponseEntity<ResultErrorsResponse> blackList(@PathVariable long bannedId, @PathVariable String decision) {
 
-        return ResponseEntity.ok(profileService.changeBlackList(bannedId, decision, principal));
+        return ResponseEntity.ok(profileService.changeBlackList(bannedId, decision));
     }
 
     @GetMapping("user/sender/get")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<User> getSender(Principal principal) {
+    public ResponseEntity<User> getSender() {
 
-        return ResponseEntity.ok(profileService.getSender(principal));
+        return ResponseEntity.ok(profileService.getSender());
     }
 
     @GetMapping("user/recipient/{id}/get")
@@ -205,9 +199,9 @@ public class GeneralController {
 
     @GetMapping("jobs")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<JobListResponse> getJobList(Principal principal) {
+    public ResponseEntity<JobListResponse> getJobList() {
 
-        return ResponseEntity.ok(profileService.getJobList(principal));
+        return ResponseEntity.ok(profileService.getJobList());
     }
 
     @DeleteMapping("jobs/delete")
@@ -218,15 +212,15 @@ public class GeneralController {
 
     @GetMapping("professions")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<ProfessionsResponse> getProfessionList(Principal principal) {
+    public ResponseEntity<ProfessionsResponse> getProfessionList() {
 
-        return ResponseEntity.ok(systemService.getProfessionsList(principal));
+        return ResponseEntity.ok(systemService.getProfessionsList());
     }
 
     @GetMapping("user/get")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<UserInfoResponse> getUser(Principal principal) {
+    public ResponseEntity<UserInfoResponse> getUser() {
 
-        return ResponseEntity.ok(profileService.getUserInfo(principal));
+        return ResponseEntity.ok(profileService.getUserInfo());
     }
 }
