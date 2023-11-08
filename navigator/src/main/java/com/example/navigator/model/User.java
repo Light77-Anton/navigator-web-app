@@ -48,8 +48,14 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "is_email_hidden", nullable = false)
+    private boolean isEmailHidden;
+
     @Column(name = "phone")
     private String phone;
+
+    @Column(name = "is_phone_hidden", nullable = false)
+    private boolean isPhoneHidden;
 
     @Column(name = "last_request")
     private String lastRequest;

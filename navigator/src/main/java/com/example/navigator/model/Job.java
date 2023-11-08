@@ -27,14 +27,8 @@ public class Job {
             inverseJoinColumns = {@JoinColumn(name = "profession_id")})
     private List<Profession> professions;
 
-    @Column(name = "designated_date_time")
-    private LocalDateTime designatedDateTime;
-
     @Column(name = "start_date_time")
     private LocalDateTime startDateTime;
-
-    @Column(name = "end_date_time")
-    private LocalDateTime endDateTime;
 
     @Column(name = "payment_and_additional_info", nullable = false)
     private String paymentAndAdditionalInfo;

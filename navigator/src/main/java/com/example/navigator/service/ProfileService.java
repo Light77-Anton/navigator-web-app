@@ -98,7 +98,11 @@ public class ProfileService {
         userInfoResponse.setLocation(user.getLocation());
         userInfoResponse.setRole(user.getRoleString());
         userInfoResponse.setName(user.getName());
-        userInfoResponse.setCommunicationLanguages(user.getCommunicationLanguages());
+        ArrayList<String> list = new ArrayList<>();
+        for (Language lang : user.getCommunicationLanguages()) {
+            list.add(lang.getLanguageEndonym());
+        }
+        userInfoResponse.setCommunicationLanguages(list);
         userInfoResponse.setPhone(user.getPhone());
         userInfoResponse.setEmployeeData(user.getEmployeeData());
         userInfoResponse.setEmployerRequests(user.getEmployerRequests());

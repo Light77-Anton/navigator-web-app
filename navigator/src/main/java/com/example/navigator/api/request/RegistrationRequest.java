@@ -28,8 +28,12 @@ public class RegistrationRequest {
     private String name;
     @JsonProperty("email")
     private String email;
+    @JsonProperty("is_email_hidden")
+    private boolean isEmailHidden;
     @JsonProperty("phone")
     private String phone;
+    @JsonProperty("is_phone_hidden")
+    private boolean isPhoneHidden;
     @JsonProperty("password")
     private String password;
     @JsonProperty("repeated_password")

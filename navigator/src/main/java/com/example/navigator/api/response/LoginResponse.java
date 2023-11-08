@@ -11,6 +11,8 @@ public class LoginResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long userId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String userRole;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String blockMessage;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String role;

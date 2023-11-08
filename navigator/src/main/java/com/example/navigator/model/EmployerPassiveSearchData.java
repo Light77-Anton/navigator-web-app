@@ -27,14 +27,8 @@ public class EmployerPassiveSearchData {
     @Column(name = "job_address", nullable = false)
     private String jobAddress;
 
-    @Column(name = "designated_date_time")
-    private LocalDateTime designatedDateTime;
-
     @Column(name = "start_date_time")
     private LocalDateTime startDateTime;
-
-    @Column(name = "end_date_time")
-    private LocalDateTime endDateTime;
 
     @Column(name = "payment_and_additional_info", nullable = false)
     private String paymentAndAdditionalInfo;

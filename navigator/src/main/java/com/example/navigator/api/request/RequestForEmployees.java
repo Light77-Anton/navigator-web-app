@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
+import java.util.List;
 
 @Component
 @Data
@@ -22,9 +23,7 @@ public class RequestForEmployees {
     @JsonProperty("is_auto")
     private byte isAuto;
     @JsonProperty("language")
-    private String languageName;
-    @JsonProperty("are_languages_match")
-    private byte areLanguagesMatch;
+    private List<String> languageName;
     @JsonProperty("job_address_latitude")
     private Double jobAddressLat;
     @JsonProperty("job_address_longitude")

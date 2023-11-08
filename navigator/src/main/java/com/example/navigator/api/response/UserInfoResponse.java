@@ -10,7 +10,7 @@ import java.util.List;
 public class UserInfoResponse {
 
     private String socialNetworksLinks;
-    private List<Language> communicationLanguages;
+    private List<String> communicationLanguages;
     private String endonymInterfaceLanguage;
     private List<Vote> votes;
     private double ranking;

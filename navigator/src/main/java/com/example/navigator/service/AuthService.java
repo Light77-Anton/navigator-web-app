@@ -136,6 +136,7 @@ public class AuthService {
             User currentUser = userRepository.findByEmail(user.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException(user.getUsername()));
             loginResponse.setUserId(currentUser.getId());
+            loginResponse.setUserRole(currentUser.getRoleString());
             loginResponse.setRole(currentUser.getRoleString());
 
             return loginResponse;
@@ -203,7 +204,9 @@ public class AuthService {
         user.setCommunicationLanguages(languages);
         user.setEndonymInterfaceLanguage(registrationRequest.getInterfaceLanguage());
         user.setEmail(registrationRequest.getEmail());
+        user.setEmailHidden(registrationRequest.isEmailHidden());
         user.setName(registrationRequest.getName());
+        user.setPhoneHidden(registrationRequest.isPhoneHidden());
         user.setPassword(securityConfig.passwordEncoder().encode(registrationRequest.getPassword()));
         user.setPhone(registrationRequest.getPhone());
         user.setRegTime(LocalDateTime.now());
