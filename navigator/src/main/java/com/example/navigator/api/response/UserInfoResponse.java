@@ -19,6 +19,8 @@ public class UserInfoResponse {
     private String email;
     private String phone;
     private String lastRequest;
+    private int limitOfTheSearch;
+    private boolean areLanguagesMatched;
     private EmployeeData employeeData;
     private EmployerRequests employerRequests;
     private LocalDateTime regTime;

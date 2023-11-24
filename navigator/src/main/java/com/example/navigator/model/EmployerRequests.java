@@ -20,7 +20,7 @@ public class EmployerRequests {
     private String firmName;
 
     @OneToMany(mappedBy = "employerRequests", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<EmployerPassiveSearchData> employerPassiveSearchData;
+    private List<Vacancy> vacancies;
 
     @OneToMany(mappedBy = "employerRequests", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Job> jobs;

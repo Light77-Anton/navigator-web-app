@@ -68,11 +68,10 @@ public class SystemService {
     }
 
 
-    public ResultErrorsResponse updateLocation(long locationId, LocationRequest locationRequest) {
+    public ResultErrorsResponse updateLocation(LocationRequest locationRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         resultErrorsResponse.setResult(true);
-        locationRepository.updateLocation(locationRequest.getLatitude(), locationRequest.getLongitude(),
-                locationRequest.getCity(), locationRequest.getCountry(), locationId);
+        locationRepository.updateLocation(locationRequest.getLatitude(), locationRequest.getLongitude(), locationRequest.getId());
 
         return resultErrorsResponse;
     }
@@ -212,6 +211,7 @@ public class SystemService {
         if (inProgramMessage.isPresent()) {
             return inProgramMessage.get().getMessage();
         }
+
         return inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage();
     }
 

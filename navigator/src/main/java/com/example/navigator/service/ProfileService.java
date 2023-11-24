@@ -104,6 +104,8 @@ public class ProfileService {
         }
         userInfoResponse.setCommunicationLanguages(list);
         userInfoResponse.setPhone(user.getPhone());
+        userInfoResponse.setLimitOfTheSearch(user.getLimitForTheSearch());
+        userInfoResponse.setAreLanguagesMatched(user.isAreLanguagesMatched());
         userInfoResponse.setEmployeeData(user.getEmployeeData());
         userInfoResponse.setEmployerRequests(user.getEmployerRequests());
         userInfoResponse.setRanking(user.getRanking());
@@ -135,6 +137,8 @@ public class ProfileService {
         employeeInfoResponse.setName(user.getName());
         employeeInfoResponse.setEmail(user.getEmail());
         employeeInfoResponse.setPhone(user.getPhone());
+        employeeInfoResponse.setLimitForTheSearch(user.getLimitForTheSearch());
+        employeeInfoResponse.setAreLanguagesMatched(user.isAreLanguagesMatched());
         employeeInfoResponse.setAvatar(user.getAvatar());
         List<String> listWithExtendedInfo = new ArrayList<>();
         List<ProfessionToUser> employeesProfessionsList = professionToUserRepository.findAllByEmployeeId(user.getId());

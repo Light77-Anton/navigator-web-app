@@ -16,14 +16,14 @@ public class RequestForEmployees {
     private String professionName;
     @JsonProperty("limit")
     private int limit;
-    @JsonProperty("country")
-    private String country;
-    @JsonProperty("city")
-    private String city;
     @JsonProperty("is_auto")
-    private byte isAuto;
+    private boolean isAuto;
+    @JsonProperty("are_languages_matched")
+    private boolean areLanguagesMatched;
     @JsonProperty("language")
-    private List<String> languageName;
+    private List<String> communicationLanguages;
+    @JsonProperty("in_radius_of")
+    private int inRadiusOf;
     @JsonProperty("job_address_latitude")
     private Double jobAddressLat;
     @JsonProperty("job_address_longitude")

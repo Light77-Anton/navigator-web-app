@@ -4,6 +4,7 @@ import com.example.navigator.api.request.RequestForEmployees;
 import com.example.navigator.api.response.EmployeeInfoResponse;
 import com.example.navigator.api.response.EmployeesListResponse;
 import com.example.navigator.api.response.ResultErrorsResponse;
+import com.example.navigator.api.response.VacanciesList;
 import com.example.navigator.service.ProfileService;
 import com.example.navigator.service.SearchService;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,16 @@ public class SearchController {
         this.profileService = profileService;
     }
 
+    @GetMapping("vacancies/{profession}")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<VacanciesList> getVacanciesByProfession(@PathVariable String profession) {
+
+        return ResponseEntity.ok()
+    }
+
     @PostMapping("employer/search/passive")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> setPassiveSearch(@RequestBody JobRequest jobRequest) { //
+    public ResponseEntity<ResultErrorsResponse> setPassiveSearch(@RequestBody JobRequest jobRequest) {
 
         return ResponseEntity.ok(searchService.setPassiveSearch(jobRequest));
     }
@@ -39,20 +47,28 @@ public class SearchController {
         return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(requestForEmployees));
     }
 
-    @GetMapping("employees/nearest")
+    @GetMapping("employees/name")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<EmployeesListResponse> getTheNearestEmployeeOfChosenProfession(
+    public ResponseEntity<EmployeesListResponse> getEmployeesOfChosenProfessionSortedByName(
             @RequestBody RequestForEmployees requestForEmployees) {
 
-        return ResponseEntity.ok(searchService.getTheNearestEmployeesInfo(requestForEmployees));
+        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(requestForEmployees));
+    }
+
+    @GetMapping("employees/nearest")
+    @PreAuthorize("hasAuthority('user:hire')")
+    public ResponseEntity<EmployeesListResponse> getEmployeesOfChosenProfessionSortedByLocation(
+            @RequestBody RequestForEmployees requestForEmployees) {
+
+        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfessionSortedByLocation(requestForEmployees));
     }
 
     @GetMapping("employees/best")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<EmployeesListResponse> getTheBestEmployees(
+    public ResponseEntity<EmployeesListResponse> getEmployeesOfChosenProfessionSortedByRating(
             @RequestBody RequestForEmployees requestForEmployees) {
 
-        return ResponseEntity.ok(searchService.getTheBestEmployees(requestForEmployees));
+        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfessionSortByRating(requestForEmployees));
     }
 
     @GetMapping("employee/info/{id}")

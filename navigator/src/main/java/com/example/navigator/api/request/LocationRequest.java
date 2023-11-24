@@ -15,8 +15,6 @@ public class LocationRequest {
     private double latitude;
     @JsonProperty("longitude")
     private double longitude;
-    @JsonProperty("city")
-    private String city;
-    @JsonProperty("country")
-    private String country;
+    @JsonProperty("id")
+    private long id;
 }

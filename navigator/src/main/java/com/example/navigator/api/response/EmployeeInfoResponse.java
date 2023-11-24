@@ -13,13 +13,17 @@ public class EmployeeInfoResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Double ranking;
+    private int ranking;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String email;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String phone;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private int limitForTheSearch;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private boolean areLanguagesMatched;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String avatar;
     @JsonInclude(JsonInclude.Include.NON_NULL)

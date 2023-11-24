@@ -33,7 +33,7 @@ public class Profession {
     @JoinTable(name = "professions_to_passive_search",
             joinColumns = {@JoinColumn(name = "profession_id")},
             inverseJoinColumns = {@JoinColumn(name = "passive_search_id")})
-    private List<EmployerPassiveSearchData> passiveSearches;
+    private List<Vacancy> passiveSearches;
 
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProfessionName> professionNames;

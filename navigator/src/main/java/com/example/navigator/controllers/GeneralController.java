@@ -128,12 +128,11 @@ public class GeneralController {
         return ResponseEntity.ok(profileService.changeUserCondition(moderatorDecision));
     }
 
-    @PutMapping("location/{id}")
-    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<ResultErrorsResponse> updateLocation(@PathVariable long id,
-                                               @RequestBody LocationRequest locationRequest) {
+    @PutMapping("location")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<ResultErrorsResponse> updateLocation(@RequestBody LocationRequest locationRequest) {
 
-        return ResponseEntity.ok(systemService.updateLocation(id, locationRequest));
+        return ResponseEntity.ok(systemService.updateLocation(locationRequest));
     }
 
     @PostMapping("restore")

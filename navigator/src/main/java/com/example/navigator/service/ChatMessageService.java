@@ -34,7 +34,7 @@ public class ChatMessageService {
     @Autowired
     private JobRepository jobRepository;
     @Autowired
-    private EmployerPassiveSearchDataRepository employerPassiveSearchDataRepository;
+    private VacancyRepository vacancyRepository;
     @Autowired
     private ProfessionNameRepository professionNameRepository;
 
@@ -128,7 +128,7 @@ public class ChatMessageService {
                 jobRepository.save(job);
                 answerToOfferResponse.setResult(true);
                 answerToOfferResponse.setRecipientId(job.getEmployerRequests().getEmployer().getId());
-                employerPassiveSearchDataRepository.delete(employerPassiveSearchDataRepository
+                vacancyRepository.delete(vacancyRepository
                         .findById(decisionRequest.getPassiveSearchId()).get());
                 return answerToOfferResponse;
             }
@@ -151,7 +151,7 @@ public class ChatMessageService {
         double ranking = employee.getRanking();
         String phone = employee.getPhone();
         String avatar = employee.getAvatar();
-        Optional<EmployerPassiveSearchData> employerPassiveSearchData = employerPassiveSearchDataRepository
+        Optional<Vacancy> employerPassiveSearchData = vacancyRepository
                 .findById(employerPassiveSearchRequest.getId());
         if (employerPassiveSearchData.isEmpty()) {
             employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(OFFER_IS_NOT_EXIST, employee.getEndonymInterfaceLanguage()));

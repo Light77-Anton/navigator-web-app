@@ -3,6 +3,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,17 +16,14 @@ public class Location {
     @Column(name = "user_id")
     private Long id;
 
+    @Column(name = "last_update_time", nullable = false)
+    private LocalDateTime lastUpdateTime;
+
     @Column(name = "latitude", nullable = false)
     private double latitude;
 
     @Column(name = "longitude", nullable = false)
     private double longitude;
-
-    @Column(name = "country", nullable = false)
-    private String country;
-
-    @Column(name = "city")
-    private String city;
 
     @OneToOne
     @MapsId

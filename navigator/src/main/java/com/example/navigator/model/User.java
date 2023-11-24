@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -34,7 +35,7 @@ public class User {
     private List<Vote> votes;
 
     @Column(name = "ranking", nullable = false)
-    private double ranking;
+    private int ranking;
 
     @Column(name = "is_activated", nullable = false)
     private boolean isActivated;
@@ -120,6 +121,12 @@ public class User {
     @PrimaryKeyJoinColumn
     private Location location;
 
+    @Column(name = "limit_for_the_search")
+    private int limitForTheSearch;
+
+    @Column(name = "are_languages_matched")
+    private boolean areLanguagesMatched;
+
     public String getRoleString() {
         return role;
     }
@@ -134,6 +141,18 @@ public class User {
         return Role.MODERATOR;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
     /*
     public Role getRole() {

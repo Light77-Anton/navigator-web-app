@@ -10,8 +10,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "employers_passive_search_data")
-public class EmployerPassiveSearchData {
+@Table(name = "vacancy")
+public class Vacancy {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -19,8 +19,8 @@ public class EmployerPassiveSearchData {
     private Long id;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions_to_passive_search",
-            joinColumns = {@JoinColumn(name = "passive_search_id")},
+    @JoinTable(name = "profession_to_vacancy",
+            joinColumns = {@JoinColumn(name = "vacancy_id")},
             inverseJoinColumns = {@JoinColumn(name = "profession_id")})
     private List<Profession> professions;
 
