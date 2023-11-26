@@ -119,7 +119,7 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
-    private Location location;
+    private UserLocation userLocation;
 
     @Column(name = "limit_for_the_search")
     private int limitForTheSearch;

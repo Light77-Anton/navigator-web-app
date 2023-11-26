@@ -95,7 +95,7 @@ public class ProfileService {
         userInfoResponse.setAvatar(user.getAvatar());
         userInfoResponse.setBlocked(user.isBlocked());
         userInfoResponse.setEmail(user.getEmail());
-        userInfoResponse.setLocation(user.getLocation());
+        userInfoResponse.setUserLocation(user.getUserLocation());
         userInfoResponse.setRole(user.getRoleString());
         userInfoResponse.setName(user.getName());
         ArrayList<String> list = new ArrayList<>();
@@ -116,7 +116,7 @@ public class ProfileService {
         userInfoResponse.setVotes(user.getVotes());
         userInfoResponse.setRegTime(user.getRegTime());
         userInfoResponse.setSocialNetworksLinks(user.getSocialNetworksLinks());
-        userInfoResponse.setLocation(user.getLocation());
+        userInfoResponse.setUserLocation(user.getUserLocation());
 
         return userInfoResponse;
     }
@@ -329,7 +329,7 @@ public class ProfileService {
                 }
                 employerRequestsRepository.delete(user.get().getEmployerRequests());
             }
-            locationRepository.delete(user.get().getLocation());
+            locationRepository.delete(user.get().getUserLocation());
             userRepository.delete(user.get());
             deleteAccountResponse.setResult(true);
             return deleteAccountResponse;

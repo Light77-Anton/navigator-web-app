@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "locations")
-public class Location {
+@Table(name = "user_locations")
+public class UserLocation {
 
     @Id
     @Column(name = "user_id")

@@ -7,10 +7,12 @@ import java.util.List;
 
 @Component
 @Data
-public class VacanciesList {
+public class VacanciesListResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     List<Vacancy> employeeList;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private int count;
 }

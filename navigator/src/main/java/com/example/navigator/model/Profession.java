@@ -30,10 +30,10 @@ public class Profession {
     private List<Job> jobs;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions_to_passive_search",
+    @JoinTable(name = "profession_to_vacancy",
             joinColumns = {@JoinColumn(name = "profession_id")},
-            inverseJoinColumns = {@JoinColumn(name = "passive_search_id")})
-    private List<Vacancy> passiveSearches;
+            inverseJoinColumns = {@JoinColumn(name = "vacancy_id")})
+    private List<Vacancy> vacancies;
 
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProfessionName> professionNames;

@@ -28,5 +28,5 @@ public class UserInfoResponse {
     private String avatar;
     private List<User> blackList;
     private List<User> favorites;
-    private Location location;
+    private UserLocation userLocation;
 }

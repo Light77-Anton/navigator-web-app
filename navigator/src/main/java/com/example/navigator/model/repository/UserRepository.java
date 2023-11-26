@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -34,79 +33,43 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0")
-    HashSet<User> findAllByProfession(long professionId, Pageable pageable);
+            "WHERE u.isBlocked = false")
+    List<User> findAllByProfession(long professionId, Pageable pageable);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0 ORDER BY u.name DESC")
-    HashSet<User> findAllByProfessionSortedByName(long professionId, Pageable pageable);
+            "WHERE u.isBlocked = false ORDER BY u.name DESC")
+    List<User> findAllByProfessionSortedByName(long professionId, Pageable pageable);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "INNER JOIN u.communicationLanguages AS l WITH l.languageEndonym = :language " +
-            "WHERE u.isBlocked = 0")
-    HashSet<User> findAllByProfessionAndLanguage(long professionId, String language);
+            "WHERE u.isBlocked = false AND u.employeeData.isAuto = true")
+    List<User> findAllByProfessionAndAuto(long professionId, Pageable pageable);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "INNER JOIN u.communicationLanguages AS l WITH l.languageEndonym = :language " +
-            "WHERE u.isBlocked = 0 ORDER BY u.name DESC")
-    HashSet<User> findAllByProfessionAndLanguageSortedByName(long professionId, String language);
+            "WHERE u.isBlocked = false AND u.employeeData.isAuto = true ORDER BY u.name DESC")
+    List<User> findAllByProfessionAndAutoSortedByName(long professionId, Pageable pageable);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1")
-    HashSet<User> findAllByProfessionAndAuto(long professionId, Pageable pageable);
+            "WHERE u.isBlocked = false")
+    List<User> findAllByProfession(long professionId);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1 ORDER BY u.name DESC")
-    HashSet<User> findAllByProfessionAndAutoSortedByName(long professionId, Pageable pageable);
+            "WHERE u.isBlocked = false AND u.employeeData.isAuto = true")
+    List<User> findAllByProfessionAndAuto(long professionId);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "INNER JOIN u.communicationLanguages AS l WITH l.languageEndonym = :language " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1")
-    HashSet<User> findAllByProfessionLanguageAndAuto(long professionId, String language);
+            "WHERE u.isBlocked = false ORDER BY u.ranking DESC")
+    List<User> findTheBestByProfession(long professionId, Pageable pageable);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
             "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "INNER JOIN u.communicationLanguages AS l WITH l.languageEndonym = :language " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1 ORDER BY u.name DESC")
-    HashSet<User> findAllByProfessionLanguageAndAutoSortedByName(long professionId, String language);
-
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
-            "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0")
-    HashSet<User> findAllByProfession(long professionId);
-
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
-            "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1")
-    HashSet<User> findAllByProfessionAndAuto(long professionId);
-
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
-            "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0 ORDER BY u.ranking DESC")
-    HashSet<User> findTheBestByProfession(long professionId, Pageable pageable);
-
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
-            "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "INNER JOIN u.communicationLanguages AS l WITH l.languageEndonym = :language " +
-            "WHERE u.isBlocked = 0 ORDER BY u.ranking DESC")
-    HashSet<User> findTheBestByProfessionAndLanguage(long professionId, String language);
-
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
-            "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1 ORDER BY u.ranking DESC")
-    HashSet<User> findTheBestByProfessionAndAuto(long professionId, Pageable pageable);
-
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u " +
-            "INNER JOIN u.employeeData.professions AS p WITH p.id = :professionId " +
-            "INNER JOIN u.communicationLanguages AS l WITH l.languageEndonym = :language " +
-            "WHERE u.isBlocked = 0 AND u.employeeData.isAuto = 1 ORDER BY u.ranking DESC")
-    HashSet<User> findTheBestByProfessionLanguageAndAuto(long professionId, String language);
+            "WHERE u.isBlocked = false AND u.employeeData.isAuto = true ORDER BY u.ranking DESC")
+    List<User> findTheBestByProfessionAndAuto(long professionId, Pageable pageable);
 
     @Query(value = "SELECT u FROM com.example.navigator.model.User AS u WHERE u.id = :id")
     Optional<User> findById(long id);

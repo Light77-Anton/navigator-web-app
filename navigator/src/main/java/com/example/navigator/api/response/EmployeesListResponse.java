@@ -13,4 +13,6 @@ public class EmployeesListResponse {
     List<User> employeeList;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private int count;
 }

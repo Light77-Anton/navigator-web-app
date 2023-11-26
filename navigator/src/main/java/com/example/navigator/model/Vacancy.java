@@ -27,6 +27,10 @@ public class Vacancy {
     @Column(name = "job_address", nullable = false)
     private String jobAddress;
 
+    @OneToOne(mappedBy = "vacancy", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private JobLocation jobLocation;
+
     @Column(name = "start_date_time")
     private LocalDateTime startDateTime;
 

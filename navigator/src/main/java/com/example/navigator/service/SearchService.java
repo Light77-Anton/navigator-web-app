@@ -1,6 +1,6 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.JobRequest;
-import com.example.navigator.api.request.RequestForEmployees;
+import com.example.navigator.api.request.SearchRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -62,68 +63,143 @@ public class SearchService {
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String OFFER_IS_NOT_EXIST = "OFFER_IS_NOT_EXIST";
     private final String USER_IS_TEMPORARILY_BUSY = "USER_IS_TEMPORARILY_BUSY";
+    private final String SUCH_VACANCIES_ARE_NOT_EXIST = "SUCH_VACANCIES_ARE_NOT_EXIST";
 
-    private HashSet<User> getEmployeeListInDesignatedRadius(double usersLat, double usersLong,
-                                                                        HashSet<Location> locationsSet, double radius) {
-        HashSet<User> usersSet = new HashSet<>();
-        for (Location location : locationsSet) {
-            double lat = location.getLatitude();
-            double lon = location.getLongitude();
+    private List<User> excludeSpecifiedEmployeesAndGetList(List<User> employeeList, double usersLat,
+                                                           double usersLong, double radius, User employer,
+                                                           boolean areLanguagesMatched) {
+        List<UserLocation> locationsList = employeeList.stream().map(User::getUserLocation).collect(Collectors.toList());
+        for (UserLocation userLocation : locationsList) {
+            double lat = userLocation.getLatitude();
+            double lon = userLocation.getLongitude();
             double currentRange = AVERAGE_RADIUS_OF_THE_EARTH * (180/Math.PI) * Math.acos(
                     Math.sin(usersLat * (Math.PI/180)) * Math.sin(lat * (Math.PI/180)) +
                             Math.cos(usersLat * (Math.PI/180)) * Math.cos(lat * (Math.PI/180))
                                     * Math.cos(usersLong - lon * (Math.PI/180)));
-            if (currentRange >= radius) {
-                usersSet.add(location.getUser());
+            if (currentRange > radius) {
+                employeeList.remove(userLocation.getUser());
+            }
+        }
+        employer.getBlackList().forEach(employeeList::remove);
+        if (areLanguagesMatched) {
+            for (Language employersLanguage : employer.getCommunicationLanguages()) {
+                for (User employee : employeeList) {
+                    boolean areLanguagesMatchedInside = false;
+                    for (Language employeeLanguage : employee.getCommunicationLanguages()) {
+                        if (employersLanguage.getLanguageEndonym().equals(employeeLanguage.getLanguageEndonym())) {
+                            areLanguagesMatchedInside = true;
+                            break;
+                        }
+                    }
+                    if (!areLanguagesMatchedInside) {
+                        employeeList.remove(employee);
+                    }
+                }
             }
         }
 
-        return  usersSet;
+        return employeeList;
     }
 
-    public EmployeesListResponse getEmployeesOfChosenProfession(RequestForEmployees requestForEmployees) {
+    private List<Vacancy> excludeSpecifiedEmployersAndGetList(List<Vacancy> vacancyList, double usersLat,
+                                                              double usersLong, double radius, User employee,
+                                                              boolean areLanguagesMatched) {
+        List<JobLocation> locationsList = vacancyList.stream().map(Vacancy::getJobLocation).collect(Collectors.toList());
+        for (JobLocation jobLocation : locationsList) {
+            double lat = jobLocation.getLatitude();
+            double lon = jobLocation.getLongitude();
+            double currentRange = AVERAGE_RADIUS_OF_THE_EARTH * (180/Math.PI) * Math.acos(
+                    Math.sin(usersLat * (Math.PI/180)) * Math.sin(lat * (Math.PI/180)) +
+                            Math.cos(usersLat * (Math.PI/180)) * Math.cos(lat * (Math.PI/180))
+                                    * Math.cos(usersLong - lon * (Math.PI/180)));
+            if (currentRange > radius) {
+                vacancyList.remove(jobLocation.getVacancy());
+            }
+        }
+        List<User> employersList = vacancyList.stream().map(v -> v.getEmployerRequests().getEmployer()).collect(Collectors.toList());
+        for (User employer : employersList) {
+            if (employee.getBlackList().contains(employer)) {
+                vacancyList.removeAll(employer.getEmployerRequests().getVacancies());
+            }
+        }
+        if (areLanguagesMatched) {
+            for (Language employersLanguage : employee.getCommunicationLanguages()) {
+                for (User employer : employersList) {
+                    boolean areLanguagesMatchedInside = false;
+                    for (Language employeeLanguage : employer.getCommunicationLanguages()) {
+                        if (employersLanguage.getLanguageEndonym().equals(employeeLanguage.getLanguageEndonym())) {
+                            areLanguagesMatchedInside = true;
+                            break;
+                        }
+                    }
+                    if (!areLanguagesMatchedInside) {
+                        vacancyList.removeAll(employer.getEmployerRequests().getVacancies());
+                    }
+                }
+            }
+        }
+
+        return vacancyList;
+    }
+
+    public EmployeesListResponse getEmployeesOfChosenProfession(SearchRequest searchRequest) {
         EmployeesListResponse employeesListResponse = new EmployeesListResponse();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
-        int limit = requestForEmployees.getLimit();
+        String sortType = searchRequest.getSortType();
+        int limit = searchRequest.getLimit();
         if (limit <= 0) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return employeesListResponse;
         }
-        ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
-        List<String> communicationLanguages = requestForEmployees.getCommunicationLanguages();
-        boolean isAuto = requestForEmployees.isAuto();
-        boolean areLanguagesMatch = requestForEmployees.isAreLanguagesMatched();
-        double radius = requestForEmployees.getInRadiusOf();
+        ProfessionName professionName = professionNameRepository.findByName(searchRequest.getProfessionName()).get();
+        boolean isAuto = searchRequest.isAuto();
+        boolean areLanguagesMatch = searchRequest.isAreLanguagesMatched();
+        double radius = searchRequest.getInRadiusOf();
+        UserLocation employersLocation = user.getUserLocation();
         Pageable page = PageRequest.of(0, limit);
         List<User> employeeList;
-        HashSet<User> employeeSet = new HashSet<>();
         if (isAuto) {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet.addAll(userRepository
-                            .findAllByProfessionLanguageAndAuto(professionName.getProfession().getId(), language));
-                }
+            if (sortType.equals("name")) {
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findAllByProfessionAndAutoSortedByName(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+            } else if (sortType.equals("rating")) {
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findTheBestByProfessionAndAuto(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+            } else if (sortType.equals("location")) {
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findAllByProfessionAndAuto(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = new ArrayList<>(getEmployeesSortedByLocation(searchRequest, employeeList,
+                        employersLocation.getLatitude(), employersLocation.getLongitude()).values());
             } else {
-                employeeSet = userRepository
-                        .findAllByProfessionAndAuto(professionName.getProfession().getId(), page);
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findAllByProfessionAndAuto(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
             }
         } else {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet = userRepository
-                            .findAllByProfessionAndLanguage(professionName.getProfession().getId(), language);
-                }
+            if (sortType.equals("name")) {
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findAllByProfessionSortedByName(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+            } else if (sortType.equals("rating")) {
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findTheBestByProfession(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+            } else if (sortType.equals("location")) {
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findAllByProfession(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = new ArrayList<>(getEmployeesSortedByLocation(searchRequest, employeeList,
+                        employersLocation.getLatitude(), employersLocation.getLongitude()).values());
             } else {
-                employeeSet = userRepository
-                        .findAllByProfession(professionName.getProfession().getId(), page);
+                employeeList = excludeSpecifiedEmployeesAndGetList(
+                        userRepository.findAllByProfession(professionName.getProfession().getId(), page),
+                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
             }
         }
-        user.getBlackList().forEach(employeeSet::remove);
-        HashSet<Location> locationsSet = (HashSet<Location>) employeeSet.stream().map(User::getLocation).collect(Collectors.toSet());
-        employeeList = new ArrayList<>(new ArrayList<>(getEmployeeListInDesignatedRadius
-                (user.getLocation().getLatitude(), user.getLocation().getLongitude(),
-                        locationsSet, radius)));
         if (employeeList.isEmpty()) {
             employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
                     (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
@@ -135,192 +211,23 @@ public class SearchService {
         return employeesListResponse;
     }
 
-    public EmployeesListResponse getEmployeesOfChosenProfessionSortedByName(RequestForEmployees requestForEmployees) {
-        EmployeesListResponse employeesListResponse = new EmployeesListResponse();
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(username).get();
-        int limit = requestForEmployees.getLimit();
-        if (limit <= 0) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
-            return employeesListResponse;
-        }
-        ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
-        List<String> communicationLanguages = requestForEmployees.getCommunicationLanguages();
-        boolean isAuto = requestForEmployees.isAuto();
-        boolean areLanguagesMatch = requestForEmployees.isAreLanguagesMatched();
-        double radius = requestForEmployees.getInRadiusOf();
-        Pageable page = PageRequest.of(0, limit);
-        List<User> employeeList;
-        HashSet<User> employeeSet = new HashSet<>();
-        if (isAuto) {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet.addAll(userRepository
-                            .findAllByProfessionLanguageAndAutoSortedByName(professionName.getProfession().getId(), language));
-                }
-            } else {
-                employeeSet = userRepository
-                        .findAllByProfessionAndAutoSortedByName(professionName.getProfession().getId(), page);
-            }
-        } else {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet = userRepository
-                            .findAllByProfessionAndLanguageSortedByName(professionName.getProfession().getId(), language);
-                }
-            } else {
-                employeeSet = userRepository
-                        .findAllByProfessionSortedByName(professionName.getProfession().getId(), page);
-            }
-        }
-        user.getBlackList().forEach(employeeSet::remove);
-        HashSet<Location> locationsSet = (HashSet<Location>) employeeSet.stream().map(User::getLocation).collect(Collectors.toSet());
-        employeeList = new ArrayList<>(new ArrayList<>(getEmployeeListInDesignatedRadius
-                (user.getLocation().getLatitude(), user.getLocation().getLongitude(),
-                        locationsSet, radius)));
-        if (employeeList.isEmpty()) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
-            return employeesListResponse;
-        }
-        user.setLastRequest(professionName + "-" + limit);
-        employeesListResponse.setEmployeeList(employeeList);
+    public TreeMap<Double, User> getEmployeesSortedByLocation(SearchRequest searchRequest, List<User> employeeList,
+                                                              double usersLat, double usersLon) {
 
-        return employeesListResponse;
-    }
-
-    public EmployeesListResponse getEmployeesOfChosenProfessionSortedByLocation(RequestForEmployees requestForEmployees) {
-        EmployeesListResponse employeesListResponse = new EmployeesListResponse();
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(username).get();
-        int limit = requestForEmployees.getLimit();
-        if (limit <= 0) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
-            return employeesListResponse;
-        }
-        ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
-        List<String> communicationLanguages = requestForEmployees.getCommunicationLanguages();
-        boolean isAuto = requestForEmployees.isAuto();
-        boolean areLanguagesMatch = requestForEmployees.isAreLanguagesMatched();
-        double radius = requestForEmployees.getInRadiusOf();
-        Pageable page = PageRequest.of(0, limit);
-        List<User> employeeList;
-        HashSet<User> employeeSet = new HashSet<>();
-        if (isAuto) {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet.addAll(userRepository
-                            .findAllByProfessionLanguageAndAuto(professionName.getProfession().getId(), language));
-                }
-            } else {
-                employeeSet = userRepository
-                        .findAllByProfessionAndAuto(professionName.getProfession().getId(), page);
-            }
-        } else {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet = userRepository
-                            .findAllByProfessionAndLanguage(professionName.getProfession().getId(), language);
-                }
-            } else {
-                employeeSet = userRepository
-                        .findAllByProfession(professionName.getProfession().getId(), page);
-            }
-        }
-        user.getBlackList().forEach(employeeSet::remove);
-        HashSet<Location> locationsSet = (HashSet<Location>) employeeSet.stream().map(User::getLocation).collect(Collectors.toSet());
-        employeeList = new ArrayList<>(new ArrayList<>(getEmployeeListInDesignatedRadius
-                (user.getLocation().getLatitude(), user.getLocation().getLongitude(),
-                        locationsSet, radius)));
-        double usersLat = requestForEmployees.getJobAddressLat();
-        double usersLon = requestForEmployees.getJobAddressLon();
-        List<Location> locations = employeeList.stream().map(User::getLocation).collect(Collectors.toList());
-        if (employeeList.isEmpty()) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
-            return employeesListResponse;
-        }
-        HashMap<User, Double> map = new HashMap<>(limit);
-        for (Location loc : locations) {
+        TreeMap<Double, User> map = new TreeMap<>();
+        HashSet<UserLocation> userLocations = (HashSet<UserLocation>) employeeList.stream().map(User::getUserLocation)
+                .collect(Collectors.toSet());
+        for (UserLocation loc : userLocations) {
             double lat = loc.getLatitude();
             double lon = loc.getLongitude();
             double currentRange = AVERAGE_RADIUS_OF_THE_EARTH * (180/Math.PI) * Math.acos(
                     Math.sin(usersLat * (Math.PI/180)) * Math.sin(lat * (Math.PI/180)) +
                             Math.cos(usersLat * (Math.PI/180)) * Math.cos(lat * (Math.PI/180))
                                     * Math.cos(usersLon - lon * (Math.PI/180)));
-            if (map.size() < requestForEmployees.getLimit()) {
-                map.put(loc.getUser(), currentRange);
-                continue;
-            }
-            double theLongestValue = map.values().stream().max(Double::compare).get();
-            if (currentRange < theLongestValue) {
-                for (Map.Entry<User, Double> entry : map.entrySet()) {
-                    if (entry.getValue() == theLongestValue) {
-                        map.remove(entry.getKey());
-                        map.put(loc.getUser(), currentRange);
-                    }
-                }
-            }
+            map.put(currentRange, loc.getUser());
         }
-        user.setLastRequest(professionName + "-" + limit);
-        employeeList = new ArrayList<>(map.keySet());
-        employeesListResponse.setEmployeeList(employeeList);
 
-        return employeesListResponse;
-    }
-
-    public EmployeesListResponse getEmployeesOfChosenProfessionSortByRating(RequestForEmployees requestForEmployees) {
-        EmployeesListResponse employeesListResponse = new EmployeesListResponse();
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(username).get();
-        int limit = requestForEmployees.getLimit();
-        if (limit <= 0) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
-            return employeesListResponse;
-        }
-        ProfessionName professionName = professionNameRepository.findByName(requestForEmployees.getProfessionName()).get();
-        List<String> communicationLanguages = requestForEmployees.getCommunicationLanguages();
-        boolean isAuto = requestForEmployees.isAuto();
-        boolean areLanguagesMatch = requestForEmployees.isAreLanguagesMatched();
-        double radius = requestForEmployees.getInRadiusOf();
-        Pageable page = PageRequest.of(0, limit);
-        List<User> employeeList;
-        HashSet<User> employeeSet = new HashSet<>();
-        if (isAuto) {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet.addAll(userRepository
-                            .findTheBestByProfessionLanguageAndAuto(professionName.getProfession().getId(), language));
-                }
-            } else {
-                employeeSet = userRepository
-                        .findTheBestByProfessionAndAuto(professionName.getProfession().getId(), page);
-            }
-        } else {
-            if (areLanguagesMatch) {
-                for (String language : communicationLanguages) {
-                    employeeSet = userRepository
-                            .findTheBestByProfessionAndLanguage(professionName.getProfession().getId(), language);
-                }
-            } else {
-                employeeSet = userRepository
-                        .findTheBestByProfession(professionName.getProfession().getId(), page);
-            }
-        }
-        user.getBlackList().forEach(employeeSet::remove);
-        HashSet<Location> locationsSet = (HashSet<Location>) employeeSet.stream().map(User::getLocation).collect(Collectors.toSet());
-        employeeList = new ArrayList<>(new ArrayList<>(getEmployeeListInDesignatedRadius
-                (user.getLocation().getLatitude(), user.getLocation().getLongitude(),
-                        locationsSet, radius)));
-        if (employeeList.isEmpty()) {
-            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
-                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
-            return employeesListResponse;
-        }
-        user.setLastRequest(professionName + "-" + limit);
-        employeesListResponse.setEmployeeList(employeeList);
-
-        return employeesListResponse;
+        return map;
     }
 
     public ResultErrorsResponse setPassiveSearch(JobRequest jobRequest) {
@@ -397,4 +304,57 @@ public class SearchService {
     }
 
 
+    public VacanciesListResponse getVacanciesByProfession(SearchRequest searchRequest) {
+        VacanciesListResponse vacanciesListResponse = new VacanciesListResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        int limit = searchRequest.getLimit();
+        if (limit <= 0) {
+            vacanciesListResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
+            return vacanciesListResponse;
+        }
+        ProfessionName professionName = professionNameRepository.findByName(searchRequest.getProfessionName()).get();
+        List<String> communicationLanguages = searchRequest.getCommunicationLanguages();
+        boolean isAuto = searchRequest.isAuto();
+        boolean areLanguagesMatch = searchRequest.isAreLanguagesMatched();
+        double radius = searchRequest.getInRadiusOf();
+        Pageable page = PageRequest.of(0, limit);
+        List<User> employeeList;
+        HashSet<User> employeeSet = new HashSet<>();
+        if (isAuto) {
+            if (areLanguagesMatch) {
+                for (String language : communicationLanguages) {
+                    employeeSet.addAll(userRepository
+                            .findAllByProfessionLanguageAndAuto(professionName.getProfession().getId(), language));
+                }
+            } else {
+                employeeSet = userRepository
+                        .findAllByProfessionAndAuto(professionName.getProfession().getId(), page);
+            }
+        } else {
+            if (areLanguagesMatch) {
+                for (String language : communicationLanguages) {
+                    employeeSet = userRepository
+                            .findAllByProfessionAndLanguage(professionName.getProfession().getId(), language);
+                }
+            } else {
+                employeeSet = userRepository
+                        .findAllByProfession(professionName.getProfession().getId(), page);
+            }
+        }
+        user.getBlackList().forEach(employeeSet::remove);
+        HashSet<UserLocation> locationsSet = (HashSet<UserLocation>) employeeSet.stream().map(User::getUserLocation).collect(Collectors.toSet());
+        employeeList = new ArrayList<>(new ArrayList<>(getEmployeeListInDesignatedRadius
+                (user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        locationsSet, radius)));
+        if (employeeList.isEmpty()) {
+            employeesListResponse.setError(checkAndGetMessageInSpecifiedLanguage
+                    (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
+            return employeesListResponse;
+        }
+        user.setLastRequest(professionName + "-" + limit);
+        //
+
+        return vacanciesListResponse;
+    }
 }

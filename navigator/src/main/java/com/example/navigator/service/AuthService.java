@@ -12,13 +12,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -228,13 +225,13 @@ public class AuthService {
             employeeData.setEmployee(user);
             user.setEmployeeData(employeeData);
         }
-        Location location = new Location();
-        location.setLatitude(registrationRequest.getLatitude());
-        location.setLongitude(registrationRequest.getLongitude());
-        location.setCity(registrationRequest.getCity());
-        location.setCountry(registrationRequest.getCountry());
-        location.setUser(user);
-        user.setLocation(location);
+        UserLocation userLocation = new UserLocation();
+        userLocation.setLatitude(registrationRequest.getLatitude());
+        userLocation.setLongitude(registrationRequest.getLongitude());
+        userLocation.setCity(registrationRequest.getCity());
+        userLocation.setCountry(registrationRequest.getCountry());
+        userLocation.setUser(user);
+        user.setUserLocation(userLocation);
         userRepository.save(user);
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom("NavigatorApp");
@@ -251,7 +248,7 @@ public class AuthService {
         if (employerRequests != null) {
             employerRequestsRepository.save(employerRequests);
         }
-        locationRepository.save(location);
+        locationRepository.save(userLocation);
         resultErrorsResponse.setResult(true);
 
         return resultErrorsResponse;

@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestForEmployees {
+public class SearchRequest {
 
     @JsonProperty("profession")
     private String professionName;
@@ -28,4 +28,6 @@ public class RequestForEmployees {
     private Double jobAddressLat;
     @JsonProperty("job_address_longitude")
     private Double jobAddressLon;
+    @JsonProperty("sort_type")
+    private String SortType;
 }

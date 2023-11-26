@@ -161,11 +161,11 @@
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>9.16.3</version>
 				<configuration>
-					<locations>
-						<location>
+					<userLocations>
+						<userLocation>
 							src/main/resources/db/migration
-						</location>
-					</locations>
+						</userLocation>
+					</userLocations>
 				</configuration>
 			</plugin>
 			<plugin>
