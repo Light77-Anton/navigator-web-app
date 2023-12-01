@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 public class UserInfoResponse {
 
+    private long id;
     private String socialNetworksLinks;
     private List<String> communicationLanguages;
     private String endonymInterfaceLanguage;

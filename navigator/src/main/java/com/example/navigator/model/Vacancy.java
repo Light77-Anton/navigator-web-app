@@ -24,9 +24,6 @@ public class Vacancy {
             inverseJoinColumns = {@JoinColumn(name = "profession_id")})
     private List<Profession> professions;
 
-    @Column(name = "job_address", nullable = false)
-    private String jobAddress;
-
     @OneToOne(mappedBy = "vacancy", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private JobLocation jobLocation;

@@ -58,8 +58,8 @@ public class User {
     @Column(name = "is_phone_hidden", nullable = false)
     private boolean isPhoneHidden;
 
-    @Column(name = "last_request")
-    private String lastRequest;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SavedRequest> savedRequests;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChatNotification> notifications;

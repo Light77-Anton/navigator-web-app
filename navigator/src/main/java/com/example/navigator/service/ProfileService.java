@@ -92,6 +92,7 @@ public class ProfileService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
         UserInfoResponse userInfoResponse = new UserInfoResponse();
+        userInfoResponse.setId(user.getId());
         userInfoResponse.setAvatar(user.getAvatar());
         userInfoResponse.setBlocked(user.isBlocked());
         userInfoResponse.setEmail(user.getEmail());

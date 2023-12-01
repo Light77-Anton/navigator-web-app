@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-import java.util.List;
 
 @Component
 @Data
@@ -20,14 +19,8 @@ public class SearchRequest {
     private boolean isAuto;
     @JsonProperty("are_languages_matched")
     private boolean areLanguagesMatched;
-    @JsonProperty("language")
-    private List<String> communicationLanguages;
     @JsonProperty("in_radius_of")
     private int inRadiusOf;
-    @JsonProperty("job_address_latitude")
-    private Double jobAddressLat;
-    @JsonProperty("job_address_longitude")
-    private Double jobAddressLon;
     @JsonProperty("sort_type")
     private String SortType;
 }
