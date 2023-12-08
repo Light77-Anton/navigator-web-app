@@ -1,17 +1,10 @@
 package com.example.navigator.service;
-import com.example.navigator.api.request.InProgramMessageRequest;
-import com.example.navigator.api.request.LocationRequest;
-import com.example.navigator.api.request.ProfessionRequest;
-import com.example.navigator.api.request.TextListInSpecifiedLanguageRequest;
-import com.example.navigator.api.response.ProfessionsResponse;
-import com.example.navigator.api.response.ResultErrorsResponse;
-import com.example.navigator.api.response.StringResponse;
-import com.example.navigator.api.response.TextListResponse;
+import com.example.navigator.api.request.*;
+import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +41,18 @@ public class SystemService {
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
 
+    public IdResponse getProfessionIdByName(StringRequest stringRequest) {
+        IdResponse idResponse = new IdResponse();
+        Optional<ProfessionName> professionName = professionNameRepository.findByName(stringRequest.getString());
+        if (professionName.isEmpty()) {
+            return idResponse;
+        }
+        Profession profession = professionName.get().getProfession();
+        idResponse.setId(profession.getId());
+
+        return idResponse;
+    }
+
     public ProfessionsResponse getProfessionsList() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
@@ -80,6 +85,14 @@ public class SystemService {
         TextListResponse textListResponse = new TextListResponse();
         textListResponse.setList(languageRepository.findAll().stream()
                 .map(Language::getLanguageEndonym).collect(Collectors.toList()));
+
+        return textListResponse;
+    }
+
+    public TextListResponse getProfessionsNamesInSpecifiedLanguage(StringRequest stringRequest) {
+        TextListResponse textListResponse = new TextListResponse();
+        textListResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(stringRequest.getString())
+                .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
 
         return textListResponse;
     }

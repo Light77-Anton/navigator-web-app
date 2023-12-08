@@ -13,19 +13,19 @@ public class ProfessionToUser {
 
     }
 
-    public ProfessionToUser(long professionId, long employeeId) {
-        this.professionId = professionId;
-        this.employeeId = employeeId;
+    public ProfessionToUser(Profession profession, EmployeeData employee) {
+        this.profession = profession;
+        this.employee = employee;
     }
 
     @EmbeddedId
     private ProfessionToUserId id;
 
     @Column(name = "profession_id", insertable = false, updatable = false, nullable = false)
-    private long professionId;
+    private Profession profession;
 
     @Column(name = "employee_id", insertable = false, updatable = false, nullable = false)
-    private long employeeId;
+    private EmployeeData employee;
 
     @Column(name = "extended_info_from_employee")
     private String extendedInfoFromEmployee;

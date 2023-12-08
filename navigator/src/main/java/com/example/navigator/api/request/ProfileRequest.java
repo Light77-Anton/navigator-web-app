@@ -24,10 +24,6 @@ public class ProfileRequest {
     private String phone;
     @JsonProperty("password")
     private String password;
-    @JsonProperty("professions_and_extended_info")
-    private List<String> professionsAndExtendedInfo;
-    @JsonProperty("status")
-    private String status;
     @JsonProperty("employees_work_requirements")
     private String employeesWorkRequirements;
     @JsonProperty("is_driver_license")

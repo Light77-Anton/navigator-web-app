@@ -88,6 +88,52 @@ public class ProfileService {
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String NO_INFO_EMPLOYEE = "NO_INFO_EMPLOYEE";
 
+    public ProfessionToUserResponse getProfessionToUser(ProfessionToUserRequest professionToUserRequest) {
+        ProfessionToUserResponse professionToUserResponse = new ProfessionToUserResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        Optional<ProfessionToUser> professionToUser = professionToUserRepository
+                .findByEmployeeAndProfessionId(user.getId(), professionToUserRequest.getProfessionId());
+        professionToUserResponse.setProfession(professionToUser.get().getProfession());
+        professionToUserResponse.setEmployee(user.getEmployeeData());
+        professionToUserResponse.setExtendedInfoFromEmployee(professionToUser.get().getExtendedInfoFromEmployee());
+
+        return professionToUserResponse;
+    }
+
+    public ResultErrorsResponse postProfessionToUser(ProfessionToUserRequest professionToUserRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        List<ProfessionToUser> professionToUserList = professionToUserRepository.findAllByEmployeeId(user.getEmployeeData().getId());
+        for (ProfessionToUser professionToUser : professionToUserList) {
+            if (professionToUser.getProfession().getId() == professionToUserRequest.getProfessionId()) {
+                professionToUserRepository.delete(professionToUser);
+            }
+        }
+        ProfessionToUser professionToUser = new ProfessionToUser();
+        professionToUser.setEmployee(employeeDataRepository.findById(user.getEmployeeData().getId()).get());
+        professionToUser.setProfession(professionRepository.findById(professionToUserRequest.getProfessionId()).get());
+        if (professionToUserRequest.getAdditionalInfo() != null) {
+            professionToUser.setExtendedInfoFromEmployee(professionToUserRequest.getAdditionalInfo());
+        }
+        professionToUserRepository.save(professionToUser);
+        resultErrorsResponse.setResult(true);
+
+        return resultErrorsResponse;
+    }
+
+    public ResultErrorsResponse deleteProfessionToUser(ProfessionToUserRequest professionToUserRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        professionToUserRepository.deleteByEmployeeAndProfessionId(user.getEmployeeData().getId(),
+                professionToUserRequest.getProfessionId());
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        resultErrorsResponse.setResult(true);
+
+        return  resultErrorsResponse;
+    }
+
     public UserInfoResponse getUserInfo() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();

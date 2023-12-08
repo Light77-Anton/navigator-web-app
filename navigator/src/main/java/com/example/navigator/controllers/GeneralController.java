@@ -1,6 +1,7 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.*;
 import com.example.navigator.api.response.*;
+import com.example.navigator.model.ProfessionToUser;
 import com.example.navigator.model.User;
 import com.example.navigator.service.SearchService;
 import com.example.navigator.service.ProfileService;
@@ -10,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.security.Principal;
 
 @Controller
 @RequestMapping("api/")
@@ -39,6 +39,38 @@ public class GeneralController {
     public ResponseEntity<TextListResponse> getLanguagesList() {
 
         return ResponseEntity.ok(systemService.getLanguagesList());
+    }
+
+    @GetMapping("professions/names/list/get")
+    public ResponseEntity<TextListResponse> getProfessionsNamesInSpecifiedLanguage(@RequestBody StringRequest stringRequest) {
+
+        return ResponseEntity.ok(systemService.getProfessionsNamesInSpecifiedLanguage(stringRequest));
+    }
+
+    @GetMapping("profession/get/by/name")
+    public ResponseEntity<IdResponse> getProfessionIdByName(@RequestBody StringRequest stringRequest) {
+
+        return ResponseEntity.ok(systemService.getProfessionIdByName(stringRequest));
+    }
+
+    @GetMapping("profession/to/user/get")
+    public ResponseEntity<ProfessionToUserResponse> getProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(profileService.getProfessionToUser(professionToUserRequest));
+    }
+
+    @PostMapping("profession/to/user/post")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<ResultErrorsResponse> postProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(profileService.postProfessionToUser(professionToUserRequest));
+    }
+
+    @DeleteMapping("profession/to/user/delete")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<ResultErrorsResponse> deleteProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(profileService.deleteProfessionToUser(professionToUserRequest));
     }
 
     @GetMapping("system/text/get")
@@ -87,7 +119,7 @@ public class GeneralController {
 
     @PutMapping("profile/avatar")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<AvatarResponse> profileAvatar(@RequestParam(value = "avatar") MultipartFile avatar) {
+    public ResponseEntity<AvatarResponse> profileAvatar(@RequestPart(value = "avatar") MultipartFile avatar) {
 
         return ResponseEntity.ok(profileService.writeAvatar(avatar));
     }

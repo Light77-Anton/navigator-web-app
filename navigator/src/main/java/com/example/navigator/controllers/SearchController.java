@@ -4,7 +4,6 @@ import com.example.navigator.api.request.SearchRequest;
 import com.example.navigator.api.response.EmployeeInfoResponse;
 import com.example.navigator.api.response.SearchResponse;
 import com.example.navigator.api.response.ResultErrorsResponse;
-import com.example.navigator.api.response.VacanciesListResponse;
 import com.example.navigator.service.ProfileService;
 import com.example.navigator.service.SearchService;
 import org.springframework.http.ResponseEntity;
@@ -26,28 +25,7 @@ public class SearchController {
 
     @GetMapping("vacancies")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<SearchResponse> getVacanciesByProfession(SearchRequest searchRequest) {
-
-        return ResponseEntity.ok(searchService.getVacanciesOfChosenProfession(searchRequest));
-    }
-
-    @GetMapping("vacancies/name")
-    @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<SearchResponse> getVacanciesByProfessionSortedByName(SearchRequest searchRequest) {
-
-        return ResponseEntity.ok(searchService.getVacanciesOfChosenProfession(searchRequest));
-    }
-
-    @GetMapping("vacancies/location")
-    @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<SearchResponse> getVacanciesByProfessionSortedByLocation(SearchRequest searchRequest) {
-
-        return ResponseEntity.ok(searchService.getVacanciesOfChosenProfession(searchRequest));
-    }
-
-    @GetMapping("vacancies/rating")
-    @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<SearchResponse> getVacanciesByProfessionSortedByRating(SearchRequest searchRequest) {
+    public ResponseEntity<SearchResponse> getVacanciesByProfession(@RequestBody SearchRequest searchRequest) {
 
         return ResponseEntity.ok(searchService.getVacanciesOfChosenProfession(searchRequest));
     }
@@ -62,30 +40,6 @@ public class SearchController {
     @GetMapping("employees")
     @PreAuthorize("hasAuthority('user:hire')")
     public ResponseEntity<SearchResponse> getEmployeesOfChosenProfession(@RequestBody SearchRequest searchRequest) {
-
-        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(searchRequest));
-    }
-
-    @GetMapping("employees/name")
-    @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<SearchResponse> getEmployeesOfChosenProfessionSortedByName(
-            @RequestBody SearchRequest searchRequest) {
-
-        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(searchRequest));
-    }
-
-    @GetMapping("employees/location")
-    @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<SearchResponse> getEmployeesOfChosenProfessionSortedByLocation(
-            @RequestBody SearchRequest searchRequest) {
-
-        return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(searchRequest));
-    }
-
-    @GetMapping("employees/rating")
-    @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<SearchResponse> getEmployeesOfChosenProfessionSortedByRating(
-            @RequestBody SearchRequest searchRequest) {
 
         return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(searchRequest));
     }
