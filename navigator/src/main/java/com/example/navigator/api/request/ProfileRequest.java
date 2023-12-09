@@ -22,6 +22,12 @@ public class ProfileRequest {
     private String name;
     @JsonProperty("phone")
     private String phone;
+    @JsonProperty("is_phone_hidden")
+    private boolean isPhoneHidden;
+    @JsonProperty("is_email_hidden")
+    private boolean isEmailHidden;
+    @JsonProperty("firm_name")
+    private String firmName;
     @JsonProperty("password")
     private String password;
     @JsonProperty("employees_work_requirements")
@@ -30,6 +36,8 @@ public class ProfileRequest {
     private boolean isDriverLicense;
     @JsonProperty("is_auto")
     private boolean isAuto;
-    @JsonProperty("start_activity_date_timestamp")
-    private Long startActivityDateTimestamp;
+    @JsonProperty("are_languages_matched")
+    private boolean areLanguagesMatched;
+    @JsonProperty("limit_in_the_search")
+    private int limit;
 }

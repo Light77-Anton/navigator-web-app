@@ -4,6 +4,7 @@ import com.example.navigator.api.response.*;
 import com.example.navigator.config.SecurityConfig;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -474,6 +475,7 @@ public class ProfileService {
         String name = profileRequest.getName();
         String phone = profileRequest.getPhone();
         String password = profileRequest.getPassword();
+        String firmName = profileRequest.getFirmName();
         if (!checkName(name)) {
             errorsList.add(checkAndGetMessageInSpecifiedLanguage(NAMES_ARE_INCORRECT, user.getEndonymInterfaceLanguage()));
         }
@@ -519,46 +521,11 @@ public class ProfileService {
         user.setName(name);
         user.setPhone(phone);
         user.setPassword(securityConfig.passwordEncoder().encode(password));
+        user.setPhoneHidden(profileRequest.isPhoneHidden());
+        user.setEmailHidden(profileRequest.isEmailHidden());
+        user.setLimitForTheSearch(profileRequest.getLimit());
+        user.setAreLanguagesMatched(profileRequest.isAreLanguagesMatched());
         if (user.getRole().equals(Role.EMPLOYEE)) {
-            String status = profileRequest.getStatus();
-            if (status.equals("Employee will be active since ") || status.equals("Employee will be active until ")) {
-                LocalDateTime ldt = LocalDateTime.ofInstant
-                        (Instant.ofEpochMilli(profileRequest.getStartActivityDateTimestamp()),
-                                TimeZone.getDefault().toZoneId());
-                user.getEmployeeData().setStatus(status + ldt.format(FORMAT));
-            } else {
-                user.getEmployeeData().setStatus(status);
-            }
-            List<ProfessionToUser> professionsToUsersList = new ArrayList<>();
-            if (profileRequest.getProfessionsAndExtendedInfo() != null) {
-                List<ProfessionToUser> oldProfessionsToUsersList = user.getEmployeeData().getProfessionToUserList();
-                professionToUserRepository.deleteAllByEmployeeId(user.getId());
-                for (String professionAndExtendedInfo : profileRequest.getProfessionsAndExtendedInfo()) {
-                    String[] array = professionAndExtendedInfo.split(":", 2);
-                    if (professionNameRepository.findByName(array[0]).isEmpty()) {
-                        errorsList.add(checkAndGetMessageInSpecifiedLanguage
-                                (PROFESSION_NOT_FOUND, user.getEndonymInterfaceLanguage()) + profileRequest.getInterfaceLanguage());
-                        resultErrorsResponse.setErrors(errorsList);
-                        user.getEmployeeData().setProfessionToUserList(oldProfessionsToUsersList);
-                        return resultErrorsResponse;
-                    }
-                    Profession profession = professionNameRepository.findByName(array[0]).get().getProfession();
-                    ProfessionToUser professionToUser = new ProfessionToUser();
-                    professionToUser.setEmployeeId(user.getId());
-                    professionToUser.setProfessionId(profession.getId());
-                    if (array[1] != null) {
-                        if (!array[1].matches("\\s+")) {
-                            professionToUser.setExtendedInfoFromEmployee(array[1]);
-                            professionsToUsersList.add(professionToUser);
-                        } else {
-                            professionsToUsersList.add(professionToUser);
-                        }
-                    } else {
-                        professionsToUsersList.add(professionToUser);
-                    }
-                }
-                professionToUserRepository.saveAll(professionsToUsersList);
-            }
             if (profileRequest.getEmployeesWorkRequirements() != null) {
                 if (profileRequest.getEmployeesWorkRequirements().length() > 30) {
                     errorsList.add(checkAndGetMessageInSpecifiedLanguage
@@ -567,10 +534,14 @@ public class ProfileService {
                     return resultErrorsResponse;
                 }
             }
-            user.getEmployeeData().setProfessionToUserList(professionsToUsersList);
             user.getEmployeeData().setEmployeesWorkRequirements(profileRequest.getEmployeesWorkRequirements());
             user.getEmployeeData().setDriverLicense(profileRequest.isDriverLicense());
             user.getEmployeeData().setAuto(profileRequest.isAuto());
+        }
+        if (user.getRole().equals(Role.EMPLOYER)) {
+            if (firmName != null) {
+                user.getEmployerRequests().setFirmName(firmName);
+            }
         }
         userRepository.save(user);
         resultErrorsResponse.setResult(true);
@@ -616,6 +587,45 @@ public class ProfileService {
         }
 
         return avatarResponse;
+    }
+
+    public ResultErrorsResponse checkEmployeeStatus() {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        EmployeeData employeeData = user.getEmployeeData();
+        if (employeeData.getStatus().equals("custom")) {
+            long currentTimestamp = System.currentTimeMillis();
+            if (currentTimestamp >= employeeData.getActiveStatusStartDate()) {
+                employeeData.setStatus("active");
+                employeeData.setActiveStatusStartDate(null);
+                employeeDataRepository.save(employeeData);
+            }
+        }
+        if (!employeeData.getStatus().equals("custom")) {
+            resultErrorsResponse.setResult(true);
+        }
+
+        return resultErrorsResponse;
+    }
+
+    public ResultErrorsResponse employeeStatus(StatusRequest statusRequest) {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        EmployeeData employeeData = user.getEmployeeData();
+        if (statusRequest.getStatus().equals("active")) {
+            employeeData.setStatus("active");
+        } else if (statusRequest.getStatus().equals("inactive")) {
+            employeeData.setStatus("inactive");
+        } else {
+            employeeData.setStatus("custom");
+            employeeData.setActiveStatusStartDate(statusRequest.getTimestamp());
+        }
+        employeeDataRepository.save(employeeData);
+        resultErrorsResponse.setResult(true);
+
+        return resultErrorsResponse;
     }
 
     private boolean checkName(String name) {

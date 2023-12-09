@@ -132,6 +132,20 @@ public class GeneralController {
         return ResponseEntity.ok(profileService.checkAndChangeProfile(profileRequest));
     }
 
+    @PutMapping("status")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<ResultErrorsResponse> employeeStatus(@RequestBody StatusRequest statusRequest) {
+
+        return ResponseEntity.ok(profileService.employeeStatus(statusRequest));
+    }
+
+    @PutMapping("status/check")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<ResultErrorsResponse> checkEmployeeStatus() {
+
+        return ResponseEntity.ok(profileService.checkEmployeeStatus());
+    }
+
     @PostMapping("professions/name/add")
     @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<ResultErrorsResponse> addProfessionInSpecifiedLanguage(@RequestBody ProfessionRequest professionRequest) {

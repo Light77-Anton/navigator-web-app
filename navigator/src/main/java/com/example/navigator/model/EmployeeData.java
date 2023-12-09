@@ -34,6 +34,9 @@ public class EmployeeData {
     @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "active_status_start_date", nullable = false)
+    private Long activeStatusStartDate;
+
     @OneToOne
     @MapsId
     @JoinColumn(name = "employee_id", nullable = false)
