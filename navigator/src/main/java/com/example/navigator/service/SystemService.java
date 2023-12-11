@@ -89,9 +89,11 @@ public class SystemService {
         return textListResponse;
     }
 
-    public TextListResponse getProfessionsNamesInSpecifiedLanguage(StringRequest stringRequest) {
+    public TextListResponse getProfessionsNamesInSpecifiedLanguage() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         TextListResponse textListResponse = new TextListResponse();
-        textListResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(stringRequest.getString())
+        textListResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getEndonymInterfaceLanguage())
                 .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
 
         return textListResponse;

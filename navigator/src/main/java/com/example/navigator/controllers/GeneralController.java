@@ -42,9 +42,9 @@ public class GeneralController {
     }
 
     @GetMapping("professions/names/list/get")
-    public ResponseEntity<TextListResponse> getProfessionsNamesInSpecifiedLanguage(@RequestBody StringRequest stringRequest) {
+    public ResponseEntity<TextListResponse> getProfessionsNamesInSpecifiedLanguage() {
 
-        return ResponseEntity.ok(systemService.getProfessionsNamesInSpecifiedLanguage(stringRequest));
+        return ResponseEntity.ok(systemService.getProfessionsNamesInSpecifiedLanguage());
     }
 
     @GetMapping("profession/get/by/name")

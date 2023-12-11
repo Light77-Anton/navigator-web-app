@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "vacancy")
+@Table(name = "vacancies")
 public class Vacancy {
 
     @Id
@@ -18,11 +18,9 @@ public class Vacancy {
     @Column(name = "id")
     private Long id;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "profession_to_vacancy",
-            joinColumns = {@JoinColumn(name = "vacancy_id")},
-            inverseJoinColumns = {@JoinColumn(name = "profession_id")})
-    private List<Profession> professions;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vacancies", nullable = false)
+    private Profession profession;
 
     @OneToOne(mappedBy = "vacancy", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn

@@ -16,6 +16,7 @@ public interface ProfessionNameRepository extends JpaRepository<ProfessionName, 
             "AND pn.language.languageEndonym = :language")
     Optional<ProfessionName> findByNameAndLanguage(String name, String language);
 
-    @Query(value = "SELECT pn FROM com.example.navigator.model.ProfessionName AS pn WHERE pn.language.languageEndonym = :language")
+    @Query(value = "SELECT pn FROM com.example.navigator.model.ProfessionName AS pn " +
+    "INNER JOIN pn.language AS l WITH l.languageEndonym = :language")
     List<ProfessionName> findAllBySpecifiedLanguage(String language);
 }

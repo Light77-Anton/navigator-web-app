@@ -330,31 +330,21 @@ public class SearchService {
         return searchResponse;
     }
 
-    public ResultErrorsResponse setPassiveSearch(JobRequest jobRequest) {
+    public ResultErrorsResponse setVacancy(JobRequest jobRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employer = userRepository.findByEmail(username).get();
-        List<String> professionsNames = jobRequest.getProfessions();
+        Long professionId = jobRequest.getProfessionId();
         String jobAddress = jobRequest.getJobAddress();
+        Long latitude = jobRequest.getLatitude();
+        Long longitude = jobRequest.getLongitude();
         String info = jobRequest.getPaymentAndAdditionalInfo();
         Long timestamp = jobRequest.getTimestamp();
-        Long lowestBorderTimestamp = jobRequest.getLowestBorderTimestamp();
-        Long highestBorderTimestamp = jobRequest.getHighestBorderTimestamp();
-        List<Profession> professions = new ArrayList<>();
-        if (!professionsNames.isEmpty()) {
-            for (String professionName : professionsNames) {
-                Optional<ProfessionName> profession = professionNameRepository.findByName(professionName);
-                if (profession.isEmpty()) {
-                    errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
-                } else {
-                    professions.add(profession.get().getProfession());
-                }
-            }
-        } else {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_SPECIFICATION_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
+        if (professionId == null) {
+            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
         }
-        if (jobAddress == null || jobAddress.length() > 50) {
+        if (jobAddress == null || jobAddress.length() > 50 || latitude == null || longitude == null) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getEndonymInterfaceLanguage()));
         }
         if (info != null) {
@@ -362,7 +352,7 @@ public class SearchService {
                 errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getEndonymInterfaceLanguage()));
             }
         }
-        if (timestamp == null && (lowestBorderTimestamp == null && highestBorderTimestamp == null)) {
+        if (timestamp == null) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
         }
         if (!errors.isEmpty()) {
@@ -375,19 +365,16 @@ public class SearchService {
             employerRequestsRepository.save(employerRequests);
         }
         Vacancy vacancy = new Vacancy();
-        vacancy.setJobAddress(jobAddress);
-        vacancy.setProfessions(professions);
+        vacancy.setProfession(professionRepository.findById(professionId).get());
+        JobLocation jobLocation = new JobLocation();
+        jobLocation.setVacancy(vacancy);
+        jobLocation.setJobAddress(jobRequest.getJobAddress());
+        jobLocation.setLatitude(latitude);
+        jobLocation.setLongitude(longitude);
+        vacancy.setJobLocation(jobLocation);
         vacancy.setPaymentAndAdditionalInfo(info);
         vacancy.setEmployerRequests(employer.getEmployerRequests());
-        if (timestamp != null) {
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), TimeZone.getDefault().toZoneId());
-            vacancy.setDesignatedDateTime(dateTime);
-        } else {
-            LocalDateTime startDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), TimeZone.getDefault().toZoneId());
-            vacancy.setStartDateTime(startDateTime);
-            LocalDateTime endDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), TimeZone.getDefault().toZoneId());
-            vacancy.setEndDateTime(endDateTime);
-        }
+        vacancy.setStartDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), TimeZone.getDefault().toZoneId()));
         vacancyRepository.save(vacancy);
         resultErrorsResponse.setResult(true);
 

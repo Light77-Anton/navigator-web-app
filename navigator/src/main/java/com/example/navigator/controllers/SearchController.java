@@ -30,11 +30,11 @@ public class SearchController {
         return ResponseEntity.ok(searchService.getVacanciesOfChosenProfession(searchRequest));
     }
 
-    @PostMapping("employer/search/passive")
+    @PostMapping("employer/vacancy/set")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> setPassiveSearch(@RequestBody JobRequest jobRequest) {
+    public ResponseEntity<ResultErrorsResponse> setVacancy(@RequestBody JobRequest jobRequest) {
 
-        return ResponseEntity.ok(searchService.setPassiveSearch(jobRequest));
+        return ResponseEntity.ok(searchService.setVacancy(jobRequest));
     }
 
     @GetMapping("employees")
