@@ -16,9 +16,9 @@ public class JobRequest {
     @JsonProperty("job_address")
     private String jobAddress;
     @JsonProperty("latitude")
-    private Long latitude;
+    private Double latitude;
     @JsonProperty("longitude")
-    private Long longitude;
+    private Double longitude;
     @JsonProperty("timestamp")
     private Long timestamp;
     @JsonProperty("payment_and_additional_info")

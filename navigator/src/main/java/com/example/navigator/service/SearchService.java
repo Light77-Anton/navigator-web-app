@@ -1,6 +1,8 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.JobRequest;
+import com.example.navigator.api.request.LocationsRequest;
 import com.example.navigator.api.request.SearchRequest;
+import com.example.navigator.api.request.StringRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
@@ -66,6 +68,28 @@ public class SearchService {
     private final String OFFER_IS_NOT_EXIST = "OFFER_IS_NOT_EXIST";
     private final String USER_IS_TEMPORARILY_BUSY = "USER_IS_TEMPORARILY_BUSY";
     private final String SUCH_VACANCIES_ARE_NOT_EXIST = "SUCH_VACANCIES_ARE_NOT_EXIST";
+
+    public DistanceResponse calculateDistance(LocationsRequest locationsRequest) {
+        DistanceResponse distanceResponse = new DistanceResponse();
+        double lat1 = locationsRequest.getLat1();
+        double long1 = locationsRequest.getLong1();
+        double lat2 = locationsRequest.getLat2();
+        double long2 = locationsRequest.getLong2();
+        final double R = 6371.0;
+        double lat1Rad = Math.toRadians(lat1);
+        double lon1Rad = Math.toRadians(long1);
+        double lat2Rad = Math.toRadians(lat2);
+        double lon2Rad = Math.toRadians(long2);
+        double dLat = lat2Rad - lat1Rad;
+        double dLon = lon2Rad - lon1Rad;
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        distanceResponse.setDistance(R * c);
+
+        return distanceResponse;
+    }
 
     private List<User> excludeSpecifiedEmployeesAndGetList(List<User> employeeList, double usersLat,
                                                            double usersLong, double radius, User employer,
@@ -330,6 +354,28 @@ public class SearchService {
         return searchResponse;
     }
 
+    public ResultErrorsResponse deleteVacancyById(StringRequest stringRequest) {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        vacancyRepository.deleteById(Long.parseLong(stringRequest.getString()));
+        resultErrorsResponse.setResult(true);
+
+        return resultErrorsResponse;
+    }
+
+    public VacancyInfoResponse getVacancyById(StringRequest stringRequest) {
+        VacancyInfoResponse vacancyInfoResponse = new VacancyInfoResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        Vacancy vacancy = vacancyRepository.findById(Long.parseLong(stringRequest.getString())).get();
+        vacancyInfoResponse.setJobAddress(vacancy.getJobLocation().getJobAddress());
+        vacancyInfoResponse.setPaymentAndAdditionalInfo(vacancy.getPaymentAndAdditionalInfo());
+        vacancyInfoResponse.setLocalDate(vacancy.getStartDateTime().toLocalDate());
+        vacancyInfoResponse.setProfessionName(professionNameRepository.findByProfessionIdAndLanguage
+                (vacancy.getProfession().getId(), user.getEndonymInterfaceLanguage()).get().getProfessionName());
+
+        return vacancyInfoResponse;
+    }
+
     public ResultErrorsResponse setVacancy(JobRequest jobRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
@@ -337,8 +383,8 @@ public class SearchService {
         User employer = userRepository.findByEmail(username).get();
         Long professionId = jobRequest.getProfessionId();
         String jobAddress = jobRequest.getJobAddress();
-        Long latitude = jobRequest.getLatitude();
-        Long longitude = jobRequest.getLongitude();
+        Double latitude = jobRequest.getLatitude();
+        Double longitude = jobRequest.getLongitude();
         String info = jobRequest.getPaymentAndAdditionalInfo();
         Long timestamp = jobRequest.getTimestamp();
         if (professionId == null) {

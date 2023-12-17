@@ -1,9 +1,9 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.JobRequest;
+import com.example.navigator.api.request.LocationsRequest;
 import com.example.navigator.api.request.SearchRequest;
-import com.example.navigator.api.response.EmployeeInfoResponse;
-import com.example.navigator.api.response.SearchResponse;
-import com.example.navigator.api.response.ResultErrorsResponse;
+import com.example.navigator.api.request.StringRequest;
+import com.example.navigator.api.response.*;
 import com.example.navigator.service.ProfileService;
 import com.example.navigator.service.SearchService;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +23,13 @@ public class SearchController {
         this.profileService = profileService;
     }
 
+    @GetMapping("distance")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<DistanceResponse> getMeasuredDistance(@RequestBody LocationsRequest locationsRequest) {
+
+        return ResponseEntity.ok(searchService.calculateDistance(locationsRequest));
+    }
+
     @GetMapping("vacancies")
     @PreAuthorize("hasAuthority('user:work')")
     public ResponseEntity<SearchResponse> getVacanciesByProfession(@RequestBody SearchRequest searchRequest) {
@@ -35,6 +42,20 @@ public class SearchController {
     public ResponseEntity<ResultErrorsResponse> setVacancy(@RequestBody JobRequest jobRequest) {
 
         return ResponseEntity.ok(searchService.setVacancy(jobRequest));
+    }
+
+    @GetMapping("employer/vacancy/get")
+    @PreAuthorize("hasAuthority('user:hire')")
+    public ResponseEntity<VacancyInfoResponse> getVacancyById(@RequestBody StringRequest stringRequest) {
+
+        return ResponseEntity.ok(searchService.getVacancyById(stringRequest));
+    }
+
+    @GetMapping("employer/vacancy/delete")
+    @PreAuthorize("hasAuthority('user:hire')")
+    public ResponseEntity<ResultErrorsResponse> deleteVacancyById(@RequestBody StringRequest stringRequest) {
+
+        return ResponseEntity.ok(searchService.deleteVacancyById(stringRequest));
     }
 
     @GetMapping("employees")
