@@ -136,13 +136,13 @@ public class ChatMessageService {
         return answerToOfferResponse;
     }
 
-    public EmployeeInfoResponse sendEmployeesOffer (EmployerPassiveSearchRequest employerPassiveSearchRequest) {
-        EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
+    public ExtendedUserInfoResponse sendEmployeesOffer (EmployerPassiveSearchRequest employerPassiveSearchRequest) {
+        ExtendedUserInfoResponse extendedUserInfoResponse = new ExtendedUserInfoResponse();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employee = userRepository.findByEmail(username).get();
         for (Job job : employee.getEmployeeData().getJobs()) {
             if (job.getStatus().equals("NOT CONFIRMED")) {
-                employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employee.getEndonymInterfaceLanguage()));
+                extendedUserInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employee.getEndonymInterfaceLanguage()));
             }
         }
         List<Profession> professions = employee.getEmployeeData().getProfessionToUserList();
@@ -154,8 +154,8 @@ public class ChatMessageService {
         Optional<Vacancy> employerPassiveSearchData = vacancyRepository
                 .findById(employerPassiveSearchRequest.getId());
         if (employerPassiveSearchData.isEmpty()) {
-            employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(OFFER_IS_NOT_EXIST, employee.getEndonymInterfaceLanguage()));
-            return employeeInfoResponse;
+            extendedUserInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(OFFER_IS_NOT_EXIST, employee.getEndonymInterfaceLanguage()));
+            return extendedUserInfoResponse;
         }
         String jobAddress = employerPassiveSearchData.get().getJobAddress();
         String additionalInfo = employerPassiveSearchData.get().getPaymentAndAdditionalInfo();
@@ -177,14 +177,14 @@ public class ChatMessageService {
         job.setStatus("NOT CONFIRMED");
         job.setEmployeeData(employee.getEmployeeData());
         jobRepository.save(job);
-        employeeInfoResponse.setName(name);
-        employeeInfoResponse.setEmail(email);
-        employeeInfoResponse.setRanking(ranking);
-        employeeInfoResponse.setPhone(phone);
-        employeeInfoResponse.setAvatar(avatar);
-        employeeInfoResponse.setToEmployerId(employerPassiveSearchData.get().getEmployerRequests().getEmployer().getId());
+        extendedUserInfoResponse.setName(name);
+        extendedUserInfoResponse.setEmail(email);
+        extendedUserInfoResponse.setRanking(ranking);
+        extendedUserInfoResponse.setPhone(phone);
+        extendedUserInfoResponse.setAvatar(avatar);
+        extendedUserInfoResponse.setToEmployerId(employerPassiveSearchData.get().getEmployerRequests().getEmployer().getId());
 
-        return employeeInfoResponse;
+        return extendedUserInfoResponse;
     }
 
     public JobResponse sendEmployerOffer(JobRequest jobRequest) {

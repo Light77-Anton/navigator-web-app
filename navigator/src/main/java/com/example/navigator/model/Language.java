@@ -30,4 +30,7 @@ public class Language {
             joinColumns = {@JoinColumn(name = "language_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")})
     private List<User> users;
+
+    @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProfessionToUser> professionToUsers;
 }

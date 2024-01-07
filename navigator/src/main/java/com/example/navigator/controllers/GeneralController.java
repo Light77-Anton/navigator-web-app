@@ -1,7 +1,6 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.*;
 import com.example.navigator.api.response.*;
-import com.example.navigator.model.ProfessionToUser;
 import com.example.navigator.model.User;
 import com.example.navigator.service.SearchService;
 import com.example.navigator.service.ProfileService;
@@ -54,6 +53,7 @@ public class GeneralController {
     }
 
     @GetMapping("profession/to/user/get")
+    @PreAuthorize("hasAuthority('user:work')")
     public ResponseEntity<ProfessionToUserResponse> getProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(profileService.getProfessionToUser(professionToUserRequest));

@@ -4,7 +4,6 @@ import com.example.navigator.api.response.*;
 import com.example.navigator.config.SecurityConfig;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,6 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -169,37 +166,37 @@ public class ProfileService {
         return userInfoResponse;
     }
 
-    public EmployeeInfoResponse getEmployeeInfo(long id) {
+    public ExtendedUserInfoResponse getEmployeeInfo(StringRequest stringRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employer = userRepository.findByEmail(username).get();
-        EmployeeInfoResponse employeeInfoResponse = new EmployeeInfoResponse();
-        Optional<User> employee = userRepository.findById(id);
+        ExtendedUserInfoResponse extendedUserInfoResponse = new ExtendedUserInfoResponse();
+        Optional<User> employee = userRepository.findById((Long.parseLong(stringRequest.getString())));
         if (employee.isEmpty() || !employee.get().getRole().equals(Role.EMPLOYEE)) {
-            employeeInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage
+            extendedUserInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage
                     (NO_INFO_EMPLOYEE, employer.getEndonymInterfaceLanguage()));
-            return employeeInfoResponse;
+            return extendedUserInfoResponse;
         }
         User user = employee.get();
-        employeeInfoResponse.setRanking(user.getRanking());
-        employeeInfoResponse.setStatus(user.getEmployeeData().getStatus());
-        employeeInfoResponse.setName(user.getName());
-        employeeInfoResponse.setEmail(user.getEmail());
-        employeeInfoResponse.setPhone(user.getPhone());
-        employeeInfoResponse.setLimitForTheSearch(user.getLimitForTheSearch());
-        employeeInfoResponse.setAreLanguagesMatched(user.isAreLanguagesMatched());
-        employeeInfoResponse.setAvatar(user.getAvatar());
-        List<String> listWithExtendedInfo = new ArrayList<>();
+        extendedUserInfoResponse.setRating(user.getRanking());
+        extendedUserInfoResponse.setStatus(user.getEmployeeData().getStatus());
+        extendedUserInfoResponse.setName(user.getName());
+        extendedUserInfoResponse.setEmail(user.getEmail());
+        extendedUserInfoResponse.setPhone(user.getPhone());
+        extendedUserInfoResponse.setAvatar(user.getAvatar());
+
+        HashMap<String, String> professionsAndInfoMap = new HashMap();
         List<ProfessionToUser> employeesProfessionsList = professionToUserRepository.findAllByEmployeeId(user.getId());
         for (ProfessionToUser ptu : employeesProfessionsList) {
             if (ptu.getExtendedInfoFromEmployee() != null) {
                 if (!ptu.getExtendedInfoFromEmployee().matches("\\s+")) {
-                    listWithExtendedInfo.add(ptu.getExtendedInfoFromEmployee());
+
+                    professionsAndInfoMap.put(, );
                 }
             }
         }
-        employeeInfoResponse.setExtendedInfoFromEmployeeAboutProfessions(listWithExtendedInfo);
+        extendedUserInfoResponse.setExtendedInfoFromEmployeeAboutProfessions(listWithExtendedInfo);
 
-        return employeeInfoResponse;
+        return extendedUserInfoResponse;
     }
 
     public StringResponse activateAccount(Long userId) {

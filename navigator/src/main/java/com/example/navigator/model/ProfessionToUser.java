@@ -27,6 +27,10 @@ public class ProfessionToUser {
     @Column(name = "employee_id", insertable = false, updatable = false, nullable = false)
     private EmployeeData employee;
 
+    @ManyToOne
+    @JoinColumn(name = "language_id")
+    private Language language;
+
     @Column(name = "extended_info_from_employee")
     private String extendedInfoFromEmployee;
 }

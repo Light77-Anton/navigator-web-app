@@ -65,11 +65,18 @@ public class SearchController {
         return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(searchRequest));
     }
 
-    @GetMapping("employee/info/{id}")
+    @GetMapping("employee/info")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<EmployeeInfoResponse> getEmployeeInfo(@PathVariable long id) {
+    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@RequestBody StringRequest stringRequest) {
 
-        return ResponseEntity.ok(profileService.getEmployeeInfo(id));
+        return ResponseEntity.ok(profileService.getEmployeeInfo(stringRequest));
+    }
+
+    @GetMapping("employer/info")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@RequestBody StringRequest stringRequest) {
+
+        return ResponseEntity.ok(profileService.getEmployerInfo(stringRequest));
     }
 
     @GetMapping("saved/requests/get")

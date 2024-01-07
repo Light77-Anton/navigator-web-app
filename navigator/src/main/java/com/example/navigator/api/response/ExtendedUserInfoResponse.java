@@ -2,40 +2,35 @@ package com.example.navigator.api.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.stereotype.Component;
-import java.util.List;
+import java.util.HashMap;
 
 @Component
 @Data
-public class EmployeeInfoResponse {
+public class ExtendedUserInfoResponse {
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Long toEmployerId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private int ranking;
+    private double rating;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String name;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String firmName;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String email;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String phone;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private int limitForTheSearch;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private boolean areLanguagesMatched;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String avatar;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String employeesWorkRequirements;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Byte isDriverLicense;
+    private boolean isDriverLicense;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Byte isAuto;
+    private boolean isAuto;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String specialEquipment;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<String> extendedInfoFromEmployeeAboutProfessions;
+    private HashMap<String, String> ProfessionsAndInfoAboutIt;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
+
 }

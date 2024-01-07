@@ -76,16 +76,16 @@ public class ChatController {
 
     @MessageMapping("employee/offer")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<EmployeeInfoResponse> sendEmployeesOffer(
+    public ResponseEntity<ExtendedUserInfoResponse> sendEmployeesOffer(
             @Payload EmployerPassiveSearchRequest employerPassiveSearchRequest) {
-        EmployeeInfoResponse employeeInfoResponse = chatMessageService
+        ExtendedUserInfoResponse extendedUserInfoResponse = chatMessageService
                 .sendEmployeesOffer(employerPassiveSearchRequest);
-        if (employeeInfoResponse.getError() == null) {
+        if (extendedUserInfoResponse.getError() == null) {
             messagingTemplate.convertAndSendToUser
-                    (employeeInfoResponse.getToEmployerId().toString(), URL, employeeInfoResponse);
+                    (extendedUserInfoResponse.getToEmployerId().toString(), URL, extendedUserInfoResponse);
         }
 
-        return ResponseEntity.ok(employeeInfoResponse);
+        return ResponseEntity.ok(extendedUserInfoResponse);
     }
 
     @MessageMapping("message")

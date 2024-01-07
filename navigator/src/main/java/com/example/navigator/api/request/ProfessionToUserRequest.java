@@ -13,6 +13,4 @@ public class ProfessionToUserRequest {
 
     @JsonProperty("profession_id")
     private long professionId;
-    @JsonProperty("additional_info")
-    private String additionalInfo;
 }
