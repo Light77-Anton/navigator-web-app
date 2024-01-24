@@ -145,7 +145,7 @@ public class ChatMessageService {
                 extendedUserInfoResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employee.getEndonymInterfaceLanguage()));
             }
         }
-        List<Profession> professions = employee.getEmployeeData().getProfessionToUserList();
+        List<Profession> professions = employee.getEmployeeData().getProfessions();
         String name = employee.getName();
         String email = employee.getEmail();
         double ranking = employee.getRanking();

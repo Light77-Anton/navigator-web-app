@@ -22,14 +22,11 @@ public class EmployeeData {
     @Column(name = "is_auto", nullable = false)
     private boolean isAuto;
 
-    @Column(name = "employees_work_requirements")
-    private String employeesWorkRequirements;
-
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "profession_to_user",
-            joinColumns = {@JoinColumn(name = "employee_id")},
-            inverseJoinColumns = {@JoinColumn(name = "profession_id")})
-    private List<ProfessionToUser> professionToUserList;
+    @JoinTable(name = "professions_to_users",
+            joinColumns = {@JoinColumn(name = "profession_id")},
+            inverseJoinColumns = {@JoinColumn(name = "employee_id")})
+    private List<Profession> professions;
 
     @Column(name = "status", nullable = false)
     private String status;
@@ -43,5 +40,5 @@ public class EmployeeData {
     private User employee;
 
     @OneToMany(mappedBy = "employeeData", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Job> jobs;
+    private List<InfoFromEmployee> infoFromEmployee;
 }

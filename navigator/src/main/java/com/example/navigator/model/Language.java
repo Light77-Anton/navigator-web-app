@@ -25,12 +25,24 @@ public class Language {
     @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InProgramMessage> inProgramMessages;
 
+    @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InfoFromEmployee> infoFromEmployees;
+
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "language_to_user",
+    @JoinTable(name = "languages_to_users",
             joinColumns = {@JoinColumn(name = "language_id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id")})
     private List<User> users;
 
-    @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProfessionToUser> professionToUsers;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "professions_to_users",
+            joinColumns = {@JoinColumn(name = "employee_id")},
+            inverseJoinColumns = {@JoinColumn(name = "profession_id"), @JoinColumn(name = "language_id")})
+    private List<EmployeeData> employeeDataList;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "professions_to_users",
+            joinColumns = {@JoinColumn(name = "profession_id")},
+            inverseJoinColumns = {@JoinColumn(name = "employee_id"), @JoinColumn(name = "language_id")})
+    private List<Profession> professions;
 }

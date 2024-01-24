@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -28,8 +29,8 @@ public class Vacancy {
     @Column(name = "start_date_time")
     private LocalDateTime startDateTime;
 
-    @Column(name = "payment_and_additional_info", nullable = false)
-    private String paymentAndAdditionalInfo;
+    @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InfoAboutVacancyFromEmployer> paymentAndAdditionalInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employer_requests_id", nullable = false)

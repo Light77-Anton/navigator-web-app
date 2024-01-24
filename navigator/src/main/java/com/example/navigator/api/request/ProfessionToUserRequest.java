@@ -11,6 +11,6 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 public class ProfessionToUserRequest {
 
-    @JsonProperty("profession_id")
-    private long professionId;
+    @JsonProperty("id")
+    private long id;
 }

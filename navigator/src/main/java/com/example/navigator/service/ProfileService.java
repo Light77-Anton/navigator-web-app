@@ -85,13 +85,49 @@ public class ProfileService {
     private final String REGISTRATION_CONFIRMATION_MESSAGE_LOGIN = "REGISTRATION_CONFIRMATION_MESSAGE_LOGIN";
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String NO_INFO_EMPLOYEE = "NO_INFO_EMPLOYEE";
+    private final String PROFESSIONS = "PROFESSIONS";
+
+    public StringResponse getInfoFromEmployeeInEmployersLanguage(ProfessionToUserRequest professionToUserRequest) {
+        StringResponse stringResponse = new StringResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        EmployeeData employeeData = employeeDataRepository.findById(professionToUserRequest.getId()).get();
+        for (InfoFromEmployee infoFromEmployee : employeeData.getInfoFromEmployee()) {
+            for (Language employerLang : user.getCommunicationLanguages()) {
+                if (infoFromEmployee.getLanguage().getId() == employerLang.getId()) {
+                    stringResponse.setString(infoFromEmployee.getText());
+                    return stringResponse;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public StringResponse getProfessionsToUserInEmployersLanguage(ProfessionToUserRequest professionToUserRequest) {
+        StringResponse stringResponse = new StringResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        List<ProfessionToUser> professionsToUser = professionToUserRepository.findAllByEmployeeId
+                (professionToUserRequest.getId());
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(checkAndGetMessageInSpecifiedLanguage(PROFESSIONS, user.getEndonymInterfaceLanguage()) + ": ");
+        for (ProfessionToUser ptu : professionsToUser) {
+            Optional<ProfessionName> professionName = professionNameRepository.
+                    findByProfessionIdAndLanguage(ptu.getProfession().getId(), user.getEndonymInterfaceLanguage());
+            stringResponse.setString(professionName.get().getProfessionName() + ",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+
+        return stringResponse;
+    }
 
     public ProfessionToUserResponse getProfessionToUser(ProfessionToUserRequest professionToUserRequest) {
         ProfessionToUserResponse professionToUserResponse = new ProfessionToUserResponse();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
         Optional<ProfessionToUser> professionToUser = professionToUserRepository
-                .findByEmployeeAndProfessionId(user.getId(), professionToUserRequest.getProfessionId());
+                .findByEmployeeAndProfessionId(user.getId(), professionToUserRequest.getId());
         professionToUserResponse.setProfession(professionToUser.get().getProfession());
         professionToUserResponse.setEmployee(user.getEmployeeData());
         professionToUserResponse.setExtendedInfoFromEmployee(professionToUser.get().getExtendedInfoFromEmployee());
@@ -105,13 +141,13 @@ public class ProfileService {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<ProfessionToUser> professionToUserList = professionToUserRepository.findAllByEmployeeId(user.getEmployeeData().getId());
         for (ProfessionToUser professionToUser : professionToUserList) {
-            if (professionToUser.getProfession().getId() == professionToUserRequest.getProfessionId()) {
+            if (professionToUser.getProfession().getId() == professionToUserRequest.getId()) {
                 professionToUserRepository.delete(professionToUser);
             }
         }
         ProfessionToUser professionToUser = new ProfessionToUser();
         professionToUser.setEmployee(employeeDataRepository.findById(user.getEmployeeData().getId()).get());
-        professionToUser.setProfession(professionRepository.findById(professionToUserRequest.getProfessionId()).get());
+        professionToUser.setProfession(professionRepository.findById(professionToUserRequest.getId()).get());
         if (professionToUserRequest.getAdditionalInfo() != null) {
             professionToUser.setExtendedInfoFromEmployee(professionToUserRequest.getAdditionalInfo());
         }
@@ -125,7 +161,7 @@ public class ProfileService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
         professionToUserRepository.deleteByEmployeeAndProfessionId(user.getEmployeeData().getId(),
-                professionToUserRequest.getProfessionId());
+                professionToUserRequest.getId());
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         resultErrorsResponse.setResult(true);
 

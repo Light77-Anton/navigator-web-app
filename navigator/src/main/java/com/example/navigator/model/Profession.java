@@ -18,16 +18,10 @@ public class Profession {
     private Long id;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "profession_to_user",
-            joinColumns = {@JoinColumn(name = "profession_id")},
-            inverseJoinColumns = {@JoinColumn(name = "employee_id")})
-    private List<ProfessionToUser> professionToUserList;
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions_to_job",
-            joinColumns = {@JoinColumn(name = "profession_id")},
-            inverseJoinColumns = {@JoinColumn(name = "job_id")})
-    private List<Job> jobs;
+    @JoinTable(name = "professions_to_users",
+            joinColumns = {@JoinColumn(name = "employee_id")},
+            inverseJoinColumns = {@JoinColumn(name = "profession_id")})
+    private List<EmployeeData> employeeDataList;
 
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Vacancy> vacancies;

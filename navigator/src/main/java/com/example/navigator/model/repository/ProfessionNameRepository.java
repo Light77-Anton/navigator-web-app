@@ -24,4 +24,7 @@ public interface ProfessionNameRepository extends JpaRepository<ProfessionName, 
     @Query(value = "SELECT pn FROM com.example.navigator.model.ProfessionName AS pn " +
     "INNER JOIN pn.language AS l WITH l.languageEndonym = :language")
     List<ProfessionName> findAllBySpecifiedLanguage(String language);
+
+    @Query(value = "SELECT pn FROM com.example.navigator.model.ProfessionName AS pn WHERE pn.professionName = :name")
+    Optional<ProfessionName> findByName(long userId, long professionId);
 }

@@ -4,7 +4,7 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "language_to_user")
+@Table(name = "languages_to_users")
 @Getter
 @Setter
 public class LanguageToUser {

@@ -40,6 +40,20 @@ public class GeneralController {
         return ResponseEntity.ok(systemService.getLanguagesList());
     }
 
+    @GetMapping("vacancy/info/get")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<StringResponse> getAdditionalInfoAboutVacancyInSpecifiedLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(systemService.getAdditionalInfoAboutVacancyInSpecifiedLanguage(professionToUserRequest));
+    }
+
+    @GetMapping("profession/name/get")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<StringResponse> getProfessionNameInSpecifiedLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(systemService.getProfessionNameByIdAndLanguage(professionToUserRequest));
+    }
+
     @GetMapping("professions/names/list/get")
     public ResponseEntity<TextListResponse> getProfessionsNamesInSpecifiedLanguage() {
 
@@ -50,6 +64,20 @@ public class GeneralController {
     public ResponseEntity<IdResponse> getProfessionIdByName(@RequestBody StringRequest stringRequest) {
 
         return ResponseEntity.ok(systemService.getProfessionIdByName(stringRequest));
+    }
+
+    @GetMapping("info/from/employee/get")
+    @PreAuthorize("hasAuthority('user:hire')")
+    public ResponseEntity<StringResponse> getInfoFromEmployeeInEmployersLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(profileService.getInfoFromEmployeeInEmployersLanguage(professionToUserRequest));
+    }
+
+    @GetMapping("professions/to/employee/get")
+    @PreAuthorize("hasAuthority('user:hire')")
+    public ResponseEntity<StringResponse> getProfessionsToUserInEmployersLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+
+        return ResponseEntity.ok(profileService.getProfessionsToUserInEmployersLanguage(professionToUserRequest));
     }
 
     @GetMapping("profession/to/user/get")

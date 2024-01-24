@@ -31,6 +31,8 @@ public class SystemService {
     private LocationRepository locationRepository;
     @Autowired
     private JobRepository jobRepository;
+    @Autowired
+    private InfoAboutVacancyFromEmployerRepository infoAboutVacancyFromEmployerRepository;
 
     private final String DEFAULT_LANGUAGE = "English";
     private final String LANGUAGE_IS_NOT_EXIST = "LANGUAGE_IS_NOT_EXIST";
@@ -40,6 +42,34 @@ public class SystemService {
     private final String PROFESSION_ALREADY_EXISTS = "PROFESSION_ALREADY_EXISTS";
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
+
+    public StringResponse getAdditionalInfoAboutVacancyInSpecifiedLanguage(ProfessionToUserRequest professionToUserRequest) {
+        StringResponse stringResponse = new StringResponse();
+        long vacancyId = professionToUserRequest.getId();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        for (Language language : user.getCommunicationLanguages()) {
+            Optional<InfoAboutVacancyFromEmployer> infoAboutVacancyFromEmployer = infoAboutVacancyFromEmployerRepository.
+                    findByVacancyIdAndLanguage(vacancyId, language.getLanguageEndonym());
+            if (infoAboutVacancyFromEmployer.isPresent()) {
+                stringResponse.setString(infoAboutVacancyFromEmployer.get().getText());
+                return stringResponse;
+            }
+        }
+
+        return null;
+    }
+
+    public StringResponse getProfessionNameByIdAndLanguage(ProfessionToUserRequest professionToUserRequest) {
+        StringResponse stringResponse = new StringResponse();
+        long professionId = professionToUserRequest.getId();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        Optional<ProfessionName> professionName = professionNameRepository.findByProfessionIdAndLanguage(professionId, user.getEndonymInterfaceLanguage());
+        stringResponse.setString(professionName.get().getProfessionName());
+
+        return stringResponse;
+    }
 
     public IdResponse getProfessionIdByName(StringRequest stringRequest) {
         IdResponse idResponse = new IdResponse();
