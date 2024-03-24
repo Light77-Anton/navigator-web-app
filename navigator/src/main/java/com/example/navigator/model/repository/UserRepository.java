@@ -71,9 +71,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE u.isBlocked = false AND u.employeeData.isAuto = true ORDER BY u.ranking DESC")
     List<User> findTheBestByProfessionAndAuto(long professionId, Pageable pageable);
 
-    @Query(value = "SELECT u FROM com.example.navigator.model.User AS u WHERE u.id = :id")
-    Optional<User> findById(long id);
-
     @Transactional
     @Modifying
     @Query(value = "UPDATE com.example.navigator.model.User AS u SET u.restoreCode = :code WHERE u.id = :id")

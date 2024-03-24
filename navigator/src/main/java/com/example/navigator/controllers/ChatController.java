@@ -1,4 +1,5 @@
 package com.example.navigator.controllers;
+import com.example.navigator.api.request.ChatRequest;
 import com.example.navigator.api.request.DecisionRequest;
 import com.example.navigator.api.request.EmployerPassiveSearchRequest;
 import com.example.navigator.api.request.JobRequest;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.security.Principal;
 
@@ -89,18 +91,15 @@ public class ChatController {
     }
 
     @MessageMapping("message")
-    @PreAuthorize("hasAuthority('user:work') or hasAuthority('user:hire')")
-    public void processMessage(@Payload ChatMessage chatMessage) {
-        if (chatMessage.getChat() == null) {
-            chatMessageService.createChat(chatMessage);
-        }
-        ChatMessageResponse response = chatMessageService.saveNewMessage(chatMessage,
-                chatMessageService.getChat(chatMessage.getSender().getId(), chatMessage.getRecipient().getId()));
+    @PreAuthorize("hasAuthority('user:work') or hasAuthority('user:hire') or hasAuthority('user:moderate')")
+    public ResponseEntity<ChatMessageResponse>  processMessage(@RequestBody ChatRequest chatRequest) {
+        ChatMessageResponse response = chatMessageService.saveNewMessage(chatRequest);
         ChatNotification chatNotification = new ChatNotification(response.getMessage().getId(),
                 response.getMessage().getSender());
 
-        messagingTemplate.convertAndSendToUser(
-                chatMessage.getRecipient().getId().toString(),URL, chatNotification);
+        messagingTemplate.convertAndSendToUser(chatRequest.getRecipientId().toString(), URL, chatNotification);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("messages/{senderId}/{recipientId}/count")
@@ -110,11 +109,11 @@ public class ChatController {
         return ResponseEntity.ok(chatMessageService.countNewMessages(senderId, recipientId));
     }
 
-    @GetMapping("/messages/{senderId}/{recipientId}")
+    @GetMapping("/messages/find")
     @PreAuthorize("hasAuthority('user:work') or hasAuthority('user:hire')")
-    public ResponseEntity<ChatMessageResponse> findChatMessages(@PathVariable long senderId, @PathVariable long recipientId) {
+    public ResponseEntity<ChatMessageResponse> findChatMessages(@RequestBody ChatRequest chatRequest) {
 
-        return ResponseEntity.ok(chatMessageService.findAllMessages(senderId, recipientId));
+        return ResponseEntity.ok(chatMessageService.findAllMessages(chatRequest));
     }
 
     @GetMapping("/messages/{id}")

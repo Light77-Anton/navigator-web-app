@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(name = "chat_messages")
-public class ChatMessage {
+public class ChatMessage implements Comparable<ChatMessage> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,7 +32,7 @@ public class ChatMessage {
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content")
     private String content;
 
     @Column(name = "time")
@@ -40,4 +40,18 @@ public class ChatMessage {
 
     @Column(name = "status", nullable = false)
     private String status;
+
+    @Column(name = "is_image", nullable = false)
+    private boolean isImage;
+
+    @Override
+    public int compareTo(ChatMessage o) {
+        if (this.time.isAfter(o.time)) {
+            return 1;
+        } else if(this.time.isBefore(o.time)) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
 }

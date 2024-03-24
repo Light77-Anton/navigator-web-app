@@ -1,22 +1,28 @@
 package com.example.navigator.service;
+import com.example.navigator.api.request.ChatRequest;
 import com.example.navigator.api.request.DecisionRequest;
 import com.example.navigator.api.request.EmployerPassiveSearchRequest;
 import com.example.navigator.api.request.JobRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
+import org.apache.commons.io.FilenameUtils;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.util.*;
 
 @Service
 public class ChatMessageService {
@@ -38,9 +44,12 @@ public class ChatMessageService {
     @Autowired
     private ProfessionNameRepository professionNameRepository;
 
+    private static final long UPLOAD_LIMIT = 5242880;
     private final String DEFAULT_LANGUAGE = "English";
     private final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy hh.mm");
     private final String USER_IS_TEMPORARILY_BUSY = "USER_IS_TEMPORARILY_BUSY";
+    private final String IMAGE_SIZE = "IMAGE_SIZE";
+    private final String IMAGE_FORMAT = "IMAGE_FORMAT";
     private final String OFFER_IS_NOT_EXIST = "OFFER_IS_NOT_EXIST";
     private final String USER_NOT_FOUND = "USER_NOT_FOUND";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
@@ -264,27 +273,46 @@ public class ChatMessageService {
         return jobResponse;
     }
 
-    public void createChat(ChatMessage chatMessage) {
-        ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setSenderId(chatMessage.getSender().getId());
-        chatRoom.setRecipientId(chatMessage.getRecipient().getId());
-        chatRoomRepository.save(chatRoom);
-    }
-
-    public ChatRoom getChat(long senderId, long recipientId) {
-
-        return chatRoomRepository.findBySenderIdAndRecipientId(senderId, recipientId).get();
-    }
-
-    public ChatMessageResponse saveNewMessage(ChatMessage chatMessage, ChatRoom chatRoom) {
+    public ChatMessageResponse saveNewMessage(ChatRequest chatRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         ChatMessageResponse chatMessageResponse = new ChatMessageResponse();
-        if (chatMessage.getChat() == null) {
-            chatMessage.setChat(chatRoom);
+        chatMessageResponse.setResult(true);
+        ChatMessage chatMessage = new ChatMessage();
+        Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(chatRequest.getSenderId(), chatRequest.getRecipientId());
+        if (chatRoom.isEmpty()) {
+            ChatRoom newChatRoom = new ChatRoom();
+            newChatRoom.setSenderId(chatRequest.getSenderId());
+            newChatRoom.setRecipientId(chatRequest.getRecipientId());
+            chatMessage.setChat(newChatRoom);
+            chatRoomRepository.save(newChatRoom);
+        } else {
+            chatMessage.setChat(chatRoom.get());
         }
         chatMessage.setStatus("RECEIVED");
         chatMessage.setTime(LocalDateTime.now());
-        chatMessageRepository.save(chatMessage);
-        chatMessageResponse.setResult(true);
+        chatMessage.setImage(chatMessage.isImage());
+        chatMessage.setSender(user);
+        chatMessage.setRecipient(userRepository.findById(chatRequest.getRecipientId()).get());
+        if (chatMessage.isImage()) {
+            byte[] decodedBytes = Base64.getDecoder().decode(chatRequest.getContent());
+            try {
+                chatMessageRepository.save(chatMessage);
+                ChatMessage savedChatMessage = chatMessageRepository.getLastImageForPathSetting().get();
+                BufferedImage image = ImageIO.read(new ByteArrayInputStream(decodedBytes));
+                BufferedImage editedImage = Scalr.resize(image, Scalr.Mode.FIT_EXACT,120,120);
+                String pathToImage = "navigator/images/id" + savedChatMessage.getId() + "image.png";
+                savedChatMessage.setContent(pathToImage);
+                chatMessageRepository.save(savedChatMessage);
+                Path path = Paths.get(pathToImage);
+                ImageIO.write(editedImage, "png", path.toFile());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            chatMessage.setContent(chatRequest.getContent());
+            chatMessageRepository.save(chatMessage);
+        }
         chatMessageResponse.setMessage(chatMessage);
 
         return chatMessageResponse;
@@ -297,8 +325,10 @@ public class ChatMessageService {
         return chatMessageResponse;
     }
 
-    public ChatMessageResponse findAllMessages(long senderId, long recipientId) {
+    public ChatMessageResponse findAllMessages(ChatRequest chatRequest) {
         ChatMessageResponse chatMessageResponse = new ChatMessageResponse();
+        long senderId = chatRequest.getSenderId();
+        long recipientId = chatRequest.getRecipientId();
         Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(senderId, recipientId);
         if (chatRoom.isEmpty()) {
             ChatRoom newChatRoom = new ChatRoom(senderId, recipientId);
@@ -307,9 +337,9 @@ public class ChatMessageService {
 
             return chatMessageResponse;
         }
-        List<ChatMessage> chatMessages = chatMessageRepository.findAllBySenderIdAndRecipientId(senderId, recipientId);
+        TreeSet<ChatMessage> chatMessages = chatMessageRepository.findAllBySenderIdAndRecipientId(senderId, recipientId);
         if (chatMessages.isEmpty()) {
-            chatMessageResponse.setResult(true);
+           chatMessageResponse.setResult(true);
            return chatMessageResponse;
         }
         for (ChatMessage m : chatMessages) {
@@ -333,5 +363,41 @@ public class ChatMessageService {
         chatMessageResponse.setMessage(m);
 
         return chatMessageResponse;
+    }
+
+    public AvatarResponse writeImage(MultipartFile image) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        AvatarResponse avatarResponse = new AvatarResponse();
+        List<String> errorsList = new ArrayList<>();
+        if (image.isEmpty()) {
+            return avatarResponse;
+        }
+        if (image.getSize() > UPLOAD_LIMIT) {
+            errorsList.add(checkAndGetMessageInSpecifiedLanguage(IMAGE_SIZE, user.getEndonymInterfaceLanguage()));
+        }
+        if (!image.getOriginalFilename().endsWith("jpg") && !image.getOriginalFilename().endsWith("png")) {
+            errorsList.add(checkAndGetMessageInSpecifiedLanguage(IMAGE_FORMAT, user.getEndonymInterfaceLanguage()));
+        }
+        if (!errorsList.isEmpty()) {
+            avatarResponse.setErrors(errorsList);
+            return avatarResponse;
+        }
+        String extension = FilenameUtils.getExtension(image.getOriginalFilename());
+        try {
+            BufferedImage bufferedImage = ImageIO.read(image.getInputStream());
+            BufferedImage editedImage = Scalr.resize(bufferedImage, Scalr.Mode.FIT_EXACT,36,36);
+            String pathToImage = "navigator/images/id" + user.getId() + "image." + extension;
+            Path path = Paths.get(pathToImage);
+            ImageIO.write(editedImage, extension, path.toFile());
+
+            avatarResponse.setPathToFile(pathToImage);
+            avatarResponse.setResult(true);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return avatarResponse;
     }
 }
