@@ -65,7 +65,8 @@ public class SystemService {
         long professionId = professionToUserRequest.getId();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
-        Optional<ProfessionName> professionName = professionNameRepository.findByProfessionIdAndLanguage(professionId, user.getEndonymInterfaceLanguage());
+        Optional<ProfessionName> professionName = professionNameRepository.findByProfessionIdAndLanguage(professionId,
+                user.getEndonymInterfaceLanguage());
         stringResponse.setString(professionName.get().getProfessionName());
 
         return stringResponse;

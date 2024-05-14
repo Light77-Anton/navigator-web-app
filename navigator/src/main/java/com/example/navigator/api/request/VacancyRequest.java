@@ -4,23 +4,28 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
+import java.time.LocalDateTime;
 
 @Component
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class JobRequest {
+public class VacancyRequest {
 
-    @JsonProperty("profession_id")
-    private Long professionId;
+    @JsonProperty("recipient_id")
+    private Long recipientId;
+    @JsonProperty("profession_name")
+    private String professionName;
     @JsonProperty("job_address")
     private String jobAddress;
     @JsonProperty("latitude")
     private Double latitude;
     @JsonProperty("longitude")
     private Double longitude;
-    @JsonProperty("timestamp")
-    private Long timestamp;
+    @JsonProperty("waiting_timestamp")
+    private LocalDateTime waitingTimestamp;
+    @JsonProperty("start_timestamp")
+    private LocalDateTime startTimestamp;
     @JsonProperty("payment_and_additional_info")
     private String paymentAndAdditionalInfo;
 }

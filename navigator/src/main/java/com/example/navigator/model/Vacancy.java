@@ -29,6 +29,9 @@ public class Vacancy {
     @Column(name = "start_date_time")
     private LocalDateTime startDateTime;
 
+    @Column(name = "waiting_date_time")
+    private LocalDateTime waitingDateTime;
+
     @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InfoAboutVacancyFromEmployer> paymentAndAdditionalInfo;
 

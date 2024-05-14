@@ -1,7 +1,7 @@
 package com.example.navigator.api.response;
 import lombok.Data;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Component
 @Data
@@ -9,6 +9,6 @@ public class VacancyInfoResponse {
 
     private String professionName;
     private String jobAddress;
-    private LocalDate localDate;
+    private LocalDateTime localDateTime;
     private String paymentAndAdditionalInfo;
 }

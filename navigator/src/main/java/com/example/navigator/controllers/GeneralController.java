@@ -27,8 +27,8 @@ public class GeneralController {
     }
 
     @GetMapping("system/message/get")
-    public ResponseEntity<StringResponse> getMessageInSpecifiedLanguage(
-            @RequestBody InProgramMessageRequest inProgramMessageRequest) {
+    public ResponseEntity<StringResponse> getMessageInSpecifiedLanguage
+            (@RequestBody InProgramMessageRequest inProgramMessageRequest) {
 
         return ResponseEntity.ok(systemService.checkAndGetSingleMessageInSpecifiedLanguage(inProgramMessageRequest.getCodeName()
                 , inProgramMessageRequest.getLanguage()));
@@ -42,14 +42,16 @@ public class GeneralController {
 
     @GetMapping("vacancy/info/get")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<StringResponse> getAdditionalInfoAboutVacancyInSpecifiedLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<StringResponse> getAdditionalInfoAboutVacancyInSpecifiedLanguage
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(systemService.getAdditionalInfoAboutVacancyInSpecifiedLanguage(professionToUserRequest));
     }
 
     @GetMapping("profession/name/get")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<StringResponse> getProfessionNameInSpecifiedLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<StringResponse> getProfessionNameInSpecifiedLanguage
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(systemService.getProfessionNameByIdAndLanguage(professionToUserRequest));
     }
@@ -68,35 +70,40 @@ public class GeneralController {
 
     @GetMapping("info/from/employee/get")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<StringResponse> getInfoFromEmployeeInEmployersLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<StringResponse> getInfoFromEmployeeInEmployersLanguage
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(profileService.getInfoFromEmployeeInEmployersLanguage(professionToUserRequest));
     }
 
     @GetMapping("professions/to/employee/get")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<StringResponse> getProfessionsToUserInEmployersLanguage(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<StringResponse> getProfessionsToUserInEmployersLanguage
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(profileService.getProfessionsToUserInEmployersLanguage(professionToUserRequest));
     }
 
     @GetMapping("profession/to/user/get")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ProfessionToUserResponse> getProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<ProfessionToUserResponse> getProfessionToUser
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(profileService.getProfessionToUser(professionToUserRequest));
     }
 
     @PostMapping("profession/to/user/post")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> postProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<ResultErrorsResponse> postProfessionToUser
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(profileService.postProfessionToUser(professionToUserRequest));
     }
 
     @DeleteMapping("profession/to/user/delete")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> deleteProfessionToUser(@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<ResultErrorsResponse> deleteProfessionToUser
+            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
 
         return ResponseEntity.ok(profileService.deleteProfessionToUser(professionToUserRequest));
     }

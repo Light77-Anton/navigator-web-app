@@ -1,5 +1,5 @@
 package com.example.navigator.controllers;
-import com.example.navigator.api.request.JobRequest;
+import com.example.navigator.api.request.VacancyRequest;
 import com.example.navigator.api.request.LocationsRequest;
 import com.example.navigator.api.request.SearchRequest;
 import com.example.navigator.api.request.StringRequest;
@@ -39,9 +39,9 @@ public class SearchController {
 
     @PostMapping("employer/vacancy/set")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> setVacancy(@RequestBody JobRequest jobRequest) {
+    public ResponseEntity<ResultErrorsResponse> setVacancy(@RequestBody VacancyRequest vacancyRequest) {
 
-        return ResponseEntity.ok(searchService.setVacancy(jobRequest));
+        return ResponseEntity.ok(searchService.setVacancy(vacancyRequest));
     }
 
     @GetMapping("employer/vacancy/get")

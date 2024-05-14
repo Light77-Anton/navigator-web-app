@@ -61,8 +61,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SavedRequest> savedRequests;
 
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ChatNotification> notifications;
+    @Column(name = "notifications_count", nullable = false)
+    private int notificationsCount;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChatMessage> sentMessages;

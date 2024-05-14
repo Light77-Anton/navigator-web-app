@@ -2,7 +2,7 @@ package com.example.navigator.service;
 import com.example.navigator.api.request.ChatRequest;
 import com.example.navigator.api.request.DecisionRequest;
 import com.example.navigator.api.request.EmployerPassiveSearchRequest;
-import com.example.navigator.api.request.JobRequest;
+import com.example.navigator.api.request.VacancyRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
@@ -18,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -38,7 +37,7 @@ public class ChatMessageService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private JobRepository jobRepository;
+    private EmployeeToEmployerRepository employeeToEmployerRepository;
     @Autowired
     private VacancyRepository vacancyRepository;
     @Autowired
@@ -196,81 +195,24 @@ public class ChatMessageService {
         return extendedUserInfoResponse;
     }
 
-    public JobResponse sendEmployerOffer(JobRequest jobRequest) {
-        JobResponse jobResponse = new JobResponse();
+    public ResultErrorsResponse checkOfferFromEmployer(VacancyRequest vacancyRequest) {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employer = userRepository.findByEmail(username).get();
-        Optional<User> employee = userRepository.findById(jobRequest.getUserId());
-        List<String> professionsNames = jobRequest.getProfessions();
-        String jobAddress = jobRequest.getJobAddress();
-        String info = jobRequest.getPaymentAndAdditionalInfo();
-        Long timestamp = jobRequest.getTimestamp();
-        Long lowestBorderTimestamp = jobRequest.getLowestBorderTimestamp();
-        Long highestBorderTimestamp = jobRequest.getHighestBorderTimestamp();
+        Optional<User> employee = userRepository.findById(vacancyRequest.getRecipientId());
         if (employee.isEmpty()) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
+            resultErrorsResponse.setErrors(errors);
+            return resultErrorsResponse;
         }
-        for (Job job : employee.get().getEmployeeData().getJobs()) {
-            if (job.getStatus().equals("NOT CONFIRMED")) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(USER_IS_TEMPORARILY_BUSY, employer.getEndonymInterfaceLanguage()));
-            }
-        }
-        List<Profession> professions = new ArrayList<>();
-        if (!professionsNames.isEmpty()) {
-            for (String professionName : professionsNames) {
-                Optional<ProfessionName> profession = professionNameRepository.findByName(professionName);
-                if (profession.isEmpty()) {
-                    errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
-                } else {
-                    professions.add(profession.get().getProfession());
-                }
-            }
-        } else {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_SPECIFICATION_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
-        }
-        if (jobAddress == null || jobAddress.length() > 50) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getEndonymInterfaceLanguage()));
-        }
-        if (info != null) {
-            if (info.length() > 50) {
-                errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getEndonymInterfaceLanguage()));
-            }
-        }
-        if (timestamp == null && (lowestBorderTimestamp == null && highestBorderTimestamp == null)) {
-            errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
-        }
-        if (!errors.isEmpty()) {
-            jobResponse.setErrors(errors);
-            return jobResponse;
-        }
-        if (employer.getEmployerRequests() == null) {
-            EmployerRequests employerRequests = new EmployerRequests();
-            employerRequests.setEmployer(employer);
-            employerRequestsRepository.save(employerRequests);
-        }
-        Job job = new Job();
-        job.setJobAddress(jobAddress);
-        job.setProfessions(professions);
-        job.setPaymentAndAdditionalInfo(info);
-        job.setEmployeeData(employee.get().getEmployeeData());
-        job.setEmployerRequests(employer.getEmployerRequests());
-        if (timestamp != null) {
-            LocalDateTime designatedDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), TimeZone.getDefault().toZoneId());
-            job.setDesignatedDateTime(designatedDateTime);
-        } else {
-            LocalDateTime startDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(lowestBorderTimestamp), TimeZone.getDefault().toZoneId());
-            job.setStartDateTime(startDateTime);
-            LocalDateTime endDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(highestBorderTimestamp), TimeZone.getDefault().toZoneId());
-            job.setEndDateTime(endDateTime);
-        }
-        job.setStatus("NOT CONFIRMED");
-        job.setExpirationTime(jobRequest.getExpirationTime());
-        jobRepository.save(job);
-        jobResponse.setResult(true);
-        jobResponse.setJob(job);
+        resultErrorsResponse.setResult(true);
+        EmployeeToEmployer employeeToEmployer = new EmployeeToEmployer();
+        employeeToEmployer.setEmployerId(employer.getId());
+        employeeToEmployer.setEmployeeId(employee.get().getId());
+        employeeToEmployerRepository.save(employeeToEmployer);
 
-        return jobResponse;
+        return resultErrorsResponse;
     }
 
     public ChatMessageResponse saveNewMessage(ChatRequest chatRequest) {
@@ -399,5 +341,40 @@ public class ChatMessageService {
         }
 
         return avatarResponse;
+    }
+
+    public ResultErrorsResponse openChat(ChatRequest chatRequest) {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        User sender = userRepository.findById(chatRequest.getSenderId()).get();
+        User recipient = userRepository.findById(chatRequest.getRecipientId()).get();
+        Optional<EmployeeToEmployer> employeeToEmployer;
+        EmployeeToEmployer firstContact = new EmployeeToEmployer();
+        if (sender.getEmployeeData() != null && sender.getEmployerRequests() == null &&
+                recipient.getEmployeeData() == null && recipient.getEmployerRequests() != null) {
+            employeeToEmployer = employeeToEmployerRepository.findByEmployeeAndEmployerId(sender.getId(), recipient.getId());
+            resultErrorsResponse.setResult(true);
+            if (employeeToEmployer.isEmpty()) {
+                resultErrorsResponse.setResult(false);
+                firstContact.setEmployeeId(sender.getId());
+                firstContact.setEmployerId(recipient.getId());
+                employeeToEmployerRepository.save(firstContact);
+            }
+        } else if (sender.getEmployeeData() == null && sender.getEmployerRequests() != null &&
+                recipient.getEmployeeData() != null && recipient.getEmployerRequests() == null) {
+            employeeToEmployer = employeeToEmployerRepository.findByEmployeeAndEmployerId(recipient.getId(), sender.getId());
+            resultErrorsResponse.setResult(true);
+            if (employeeToEmployer.isEmpty()) {
+                resultErrorsResponse.setResult(false);
+                firstContact.setEmployeeId(recipient.getId());
+                firstContact.setEmployerId(sender.getId());
+                employeeToEmployerRepository.save(firstContact);
+            }
+        } else {
+            List<String> errors = new ArrayList<>();
+            errors.add(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND, sender.getEndonymInterfaceLanguage()));
+            resultErrorsResponse.setErrors(errors);
+        }
+
+        return resultErrorsResponse;
     }
 }

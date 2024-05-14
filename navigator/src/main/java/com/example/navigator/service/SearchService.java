@@ -1,5 +1,5 @@
 package com.example.navigator.service;
-import com.example.navigator.api.request.JobRequest;
+import com.example.navigator.api.request.VacancyRequest;
 import com.example.navigator.api.request.LocationsRequest;
 import com.example.navigator.api.request.SearchRequest;
 import com.example.navigator.api.request.StringRequest;
@@ -369,24 +369,24 @@ public class SearchService {
         Vacancy vacancy = vacancyRepository.findById(Long.parseLong(stringRequest.getString())).get();
         vacancyInfoResponse.setJobAddress(vacancy.getJobLocation().getJobAddress());
         vacancyInfoResponse.setPaymentAndAdditionalInfo(vacancy.getPaymentAndAdditionalInfo());
-        vacancyInfoResponse.setLocalDate(vacancy.getStartDateTime().toLocalDate());
+        vacancyInfoResponse.setLocalDateTime(vacancy.getStartDateTime());
         vacancyInfoResponse.setProfessionName(professionNameRepository.findByProfessionIdAndLanguage
                 (vacancy.getProfession().getId(), user.getEndonymInterfaceLanguage()).get().getProfessionName());
 
         return vacancyInfoResponse;
     }
 
-    public ResultErrorsResponse setVacancy(JobRequest jobRequest) {
+    public ResultErrorsResponse setVacancy(VacancyRequest vacancyRequest) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employer = userRepository.findByEmail(username).get();
-        Long professionId = jobRequest.getProfessionId();
-        String jobAddress = jobRequest.getJobAddress();
-        Double latitude = jobRequest.getLatitude();
-        Double longitude = jobRequest.getLongitude();
-        String info = jobRequest.getPaymentAndAdditionalInfo();
-        Long timestamp = jobRequest.getTimestamp();
+        Long professionId = vacancyRequest.getProfessionId();
+        String jobAddress = vacancyRequest.getJobAddress();
+        Double latitude = vacancyRequest.getLatitude();
+        Double longitude = vacancyRequest.getLongitude();
+        String info = vacancyRequest.getPaymentAndAdditionalInfo();
+        Long timestamp = vacancyRequest.getTimestamp();
         if (professionId == null) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
         }
@@ -414,7 +414,7 @@ public class SearchService {
         vacancy.setProfession(professionRepository.findById(professionId).get());
         JobLocation jobLocation = new JobLocation();
         jobLocation.setVacancy(vacancy);
-        jobLocation.setJobAddress(jobRequest.getJobAddress());
+        jobLocation.setJobAddress(vacancyRequest.getJobAddress());
         jobLocation.setLatitude(latitude);
         jobLocation.setLongitude(longitude);
         vacancy.setJobLocation(jobLocation);

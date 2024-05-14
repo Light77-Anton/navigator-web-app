@@ -28,6 +28,12 @@ public class EmployeeData {
             inverseJoinColumns = {@JoinColumn(name = "employee_id")})
     private List<Profession> professions;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "employee_to_employer",
+            joinColumns = {@JoinColumn(name = "employee_id")},
+            inverseJoinColumns = {@JoinColumn(name = "employer_id")})
+    private List<EmployerRequests> contactedEmployers;
+
     @Column(name = "status", nullable = false)
     private String status;
 
