@@ -21,6 +21,7 @@ public class UserInfoResponse {
     private String phone;
     private String lastRequest;
     private int limitOfTheSearch;
+    private boolean isMultivacancyAllowed;
     private boolean areLanguagesMatched;
     private EmployeeData employeeData;
     private EmployerRequests employerRequests;

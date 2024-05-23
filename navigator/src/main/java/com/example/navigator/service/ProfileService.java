@@ -239,6 +239,7 @@ public class ProfileService {
         User user = userRepository.findById(userId).get();
         StringResponse stringResponse = new StringResponse();
         user.setActivated(true);
+        userRepository.save(user);
         stringResponse.setString(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_LOGIN
                 , user.getEndonymInterfaceLanguage()));
 

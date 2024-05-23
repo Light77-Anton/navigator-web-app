@@ -22,6 +22,9 @@ public class EmployeeData {
     @Column(name = "is_auto", nullable = false)
     private boolean isAuto;
 
+    @Column(name = "is_multivacancy_allowed", nullable = false)
+    private boolean isMultivacancyAllowed;
+
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "professions_to_users",
             joinColumns = {@JoinColumn(name = "profession_id")},
@@ -35,7 +38,7 @@ public class EmployeeData {
     private List<EmployerRequests> contactedEmployers;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    private byte status;
 
     @Column(name = "active_status_start_date", nullable = false)
     private Long activeStatusStartDate;

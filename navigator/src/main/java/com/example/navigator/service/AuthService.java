@@ -236,11 +236,12 @@ public class AuthService {
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom("NavigatorApp");
         mail.setTo(registrationRequest.getEmail());
-        mail.setSubject("Registration confirmation");
+        mail.setSubject("Confirm registration");
         User registratedUser = userRepository.findByEmail(registrationRequest.getEmail()).get();
-        mail.setText(checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_EMAIL + "\n"
-                        + "http://localhost:8080/api/auth/account/activate/" + registratedUser.getId(), // cделать ссылку!!!
-                registrationRequest.getInterfaceLanguage()));
+        String message = checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_EMAIL,
+                registrationRequest.getInterfaceLanguage());
+        mail.setText(message + "\n"
+                        + "http://localhost:8080/api/auth/account/activate/" + registratedUser.getId());
         javaMailSender.send(mail);
         if (employeeData != null) {
             employeeDataRepository.save(employeeData);

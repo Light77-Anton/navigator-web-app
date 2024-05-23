@@ -19,6 +19,9 @@ public class EmployerRequests {
     @Column(name = "firm_name")
     private String firmName;
 
+    @Column(name = "is_multivacancy_allowed_in_search", nullable = false)
+    private boolean isMultivacancyAllowedInSearch;
+
     @OneToMany(mappedBy = "employerRequests", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Vacancy> vacancies;
 

@@ -19,6 +19,8 @@ public class SearchRequest {
     private boolean isAuto;
     @JsonProperty("are_languages_matched")
     private boolean areLanguagesMatched;
+    @JsonProperty("is_multivacancy_allowed")
+    private boolean isMultivacancyAllowed;
     @JsonProperty("in_radius_of")
     private int inRadiusOf;
     @JsonProperty("sort_type")

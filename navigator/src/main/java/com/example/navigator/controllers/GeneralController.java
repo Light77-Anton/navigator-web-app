@@ -210,7 +210,7 @@ public class GeneralController {
     }
 
     @PutMapping("location")
-    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    @PreAuthorize("hasAuthority('user:work')")
     public ResponseEntity<ResultErrorsResponse> updateLocation(@RequestBody LocationRequest locationRequest) {
 
         return ResponseEntity.ok(systemService.updateLocation(locationRequest));

@@ -22,14 +22,17 @@ public class Vacancy {
     @JoinColumn(name = "vacancies", nullable = false)
     private Profession profession;
 
+    @Column(name = "quotas_number", nullable = false)
+    private int quotasNumber;
+
     @OneToOne(mappedBy = "vacancy", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private JobLocation jobLocation;
 
-    @Column(name = "start_date_time")
+    @Column(name = "start_date_time", nullable = false)
     private LocalDateTime startDateTime;
 
-    @Column(name = "waiting_date_time")
+    @Column(name = "waiting_date_time", nullable = false)
     private LocalDateTime waitingDateTime;
 
     @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
