@@ -28,4 +28,6 @@ public class Profession {
 
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProfessionName> professionNames;
+
+    private
 }

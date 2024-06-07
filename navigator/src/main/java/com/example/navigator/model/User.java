@@ -35,7 +35,7 @@ public class User {
     private List<Vote> votes;
 
     @Column(name = "ranking", nullable = false)
-    private int ranking;
+    private byte ranking;
 
     @Column(name = "is_activated", nullable = false)
     private boolean isActivated;
@@ -58,8 +58,9 @@ public class User {
     @Column(name = "is_phone_hidden", nullable = false)
     private boolean isPhoneHidden;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SavedRequest> savedRequests;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private LastRequest lastRequest;
 
     @Column(name = "notifications_count", nullable = false)
     private int notificationsCount;

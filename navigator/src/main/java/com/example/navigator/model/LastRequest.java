@@ -3,22 +3,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "saved_requests")
-public class SavedRequest {
+@Table(name = "last_requests")
+public class LastRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "profession_name", nullable = false)
-    private String professionName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_request_id", nullable = false)
+    private Profession profession;
 
     @Column(name = "limit", nullable = false)
     private int limit;
@@ -35,7 +35,8 @@ public class SavedRequest {
     @Column(name = "sort_type")
     private String SortType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

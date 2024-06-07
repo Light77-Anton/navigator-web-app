@@ -1,5 +1,5 @@
 package com.example.navigator.api.response;
-import com.example.navigator.model.SavedRequest;
+import com.example.navigator.model.LastRequest;
 import com.example.navigator.model.User;
 import com.example.navigator.model.Vacancy;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,7 +16,7 @@ public class SearchResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     List<Vacancy> vacancyList;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    List<SavedRequest> savedRequestsList;
+    List<LastRequest> lastRequestsList;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
     @JsonInclude(JsonInclude.Include.NON_NULL)

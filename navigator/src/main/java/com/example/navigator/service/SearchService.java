@@ -330,15 +330,15 @@ public class SearchService {
     public ResultErrorsResponse saveRequest(SearchRequest searchRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
-        SavedRequest savedRequest = new SavedRequest();
-        savedRequest.setAuto(savedRequest.isAuto());
-        savedRequest.setLimit(savedRequest.getLimit());
-        savedRequest.setUser(user);
-        savedRequest.setInRadiusOf(savedRequest.getInRadiusOf());
-        savedRequest.setAreLanguagesMatched(savedRequest.isAreLanguagesMatched());
-        savedRequest.setProfessionName(savedRequest.getProfessionName());
-        savedRequest.setSortType(savedRequest.getSortType());
-        savedRequestsRepository.save(savedRequest);
+        LastRequest lastRequest = new LastRequest();
+        lastRequest.setAuto(lastRequest.isAuto());
+        lastRequest.setLimit(lastRequest.getLimit());
+        lastRequest.setUser(user);
+        lastRequest.setInRadiusOf(lastRequest.getInRadiusOf());
+        lastRequest.setAreLanguagesMatched(lastRequest.isAreLanguagesMatched());
+        lastRequest.setProfessionName(lastRequest.getProfessionName());
+        lastRequest.setSortType(lastRequest.getSortType());
+        savedRequestsRepository.save(lastRequest);
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         resultErrorsResponse.setResult(true);
 
