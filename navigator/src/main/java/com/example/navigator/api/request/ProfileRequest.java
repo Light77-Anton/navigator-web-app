@@ -30,14 +30,14 @@ public class ProfileRequest {
     private String firmName;
     @JsonProperty("password")
     private String password;
-    @JsonProperty("employees_work_requirements")
-    private String employeesWorkRequirements;
     @JsonProperty("is_driver_license")
     private boolean isDriverLicense;
     @JsonProperty("is_auto")
     private boolean isAuto;
     @JsonProperty("are_languages_matched")
     private boolean areLanguagesMatched;
+    @JsonProperty("is_multivacancy_allowed")
+    private boolean isMultivacancyAllowed;
     @JsonProperty("limit_in_the_search")
     private int limit;
 }

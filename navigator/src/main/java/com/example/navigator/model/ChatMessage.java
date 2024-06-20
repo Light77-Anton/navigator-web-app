@@ -32,10 +32,10 @@ public class ChatMessage implements Comparable<ChatMessage> {
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "time")
+    @Column(name = "time", nullable = false)
     private LocalDateTime time;
 
     @Column(name = "status", nullable = false)

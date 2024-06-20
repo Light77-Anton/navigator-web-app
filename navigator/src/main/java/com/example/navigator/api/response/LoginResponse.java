@@ -16,4 +16,6 @@ public class LoginResponse {
     private String blockMessage;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String role;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private byte currentWorkDisplay;
 }

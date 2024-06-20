@@ -21,6 +21,8 @@ public class SearchRequest {
     private boolean areLanguagesMatched;
     @JsonProperty("is_multivacancy_allowed")
     private boolean isMultivacancyAllowed;
+    @JsonProperty("show_temporarily_inactive_employees")
+    private boolean showTemporarilyInactiveEmployees;
     @JsonProperty("in_radius_of")
     private int inRadiusOf;
     @JsonProperty("sort_type")

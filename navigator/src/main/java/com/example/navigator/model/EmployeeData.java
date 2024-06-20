@@ -27,8 +27,8 @@ public class EmployeeData {
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "professions_to_users",
-            joinColumns = {@JoinColumn(name = "profession_id")},
-            inverseJoinColumns = {@JoinColumn(name = "employee_id")})
+            joinColumns = {@JoinColumn(name = "employee_id")},
+            inverseJoinColumns = {@JoinColumn(name = "profession_id")})
     private List<Profession> professions;
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -40,7 +40,7 @@ public class EmployeeData {
     @Column(name = "status", nullable = false)
     private byte status;
 
-    @Column(name = "active_status_start_date", nullable = false)
+    @Column(name = "active_status_start_date")
     private Long activeStatusStartDate;
 
     @OneToOne

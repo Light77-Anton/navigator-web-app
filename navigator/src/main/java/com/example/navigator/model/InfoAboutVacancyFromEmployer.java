@@ -15,7 +15,7 @@ public class InfoAboutVacancyFromEmployer {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "text")
+    @Column(name = "text", nullable = false)
     private String text;
 
     @ManyToOne
@@ -23,6 +23,6 @@ public class InfoAboutVacancyFromEmployer {
     private Language language;
 
     @ManyToOne
-    @JoinColumn(name = "employee_data_id")
+    @JoinColumn(name = "vacancy_id")
     private Vacancy vacancy;
 }

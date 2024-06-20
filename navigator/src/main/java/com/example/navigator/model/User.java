@@ -31,9 +31,6 @@ public class User {
     @Column(name = "interface_language", nullable = false)
     private String endonymInterfaceLanguage;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Vote> votes;
-
     @Column(name = "ranking", nullable = false)
     private byte ranking;
 
@@ -122,10 +119,13 @@ public class User {
     @PrimaryKeyJoinColumn
     private UserLocation userLocation;
 
-    @Column(name = "limit_for_the_search")
+    @Column(name = "limit_for_the_search", nullable = false)
     private int limitForTheSearch;
 
-    @Column(name = "are_languages_matched")
+    @Column(name = "current_work_display", nullable = false)
+    private byte currentWorkDisplay;
+
+    @Column(name = "are_languages_matched", nullable = false)
     private boolean areLanguagesMatched;
 
     public String getRoleString() {
@@ -154,16 +154,4 @@ public class User {
     public int hashCode() {
         return Objects.hash(id);
     }
-
-    /*
-    public Role getRole() {
-
-        return switch (role) {
-            case "Employer" -> Role.EMPLOYER;
-            case "Employee" -> Role.EMPLOYEE;
-            default -> Role.MODERATOR;
-        };
-    }
-
-     */
 }

@@ -5,6 +5,7 @@ import com.example.navigator.model.User;
 import com.example.navigator.service.SearchService;
 import com.example.navigator.service.ProfileService;
 import com.example.navigator.service.SystemService;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -302,5 +303,19 @@ public class GeneralController {
     public ResponseEntity<UserInfoResponse> getUser() {
 
         return ResponseEntity.ok(profileService.getUserInfo());
+    }
+
+    @GetMapping("user/avatar/{path}/get")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<Resource> getUserAvatar(@PathVariable("path") String path) {
+
+        return ResponseEntity.ok();
+    }
+
+    @PutMapping("user/display/change")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<ResultErrorsResponse> changeWorkDisplay() {
+
+        return ResponseEntity.ok();
     }
 }

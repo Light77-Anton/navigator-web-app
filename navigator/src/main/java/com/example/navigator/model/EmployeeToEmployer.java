@@ -1,13 +1,12 @@
 package com.example.navigator.model;
 import lombok.Getter;
 import lombok.Setter;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "employee_to_employer")
+@Table(name = "employees_to_employers")
 @Getter
 @Setter
 public class EmployeeToEmployer {
@@ -29,4 +28,13 @@ public class EmployeeToEmployer {
 
     @Column(name = "employer_id", insertable = false, updatable = false, nullable = false)
     private long employerId;
+
+    @Column(name = "available_votes_count_from_employee", nullable = false)
+    private int availableVotesCountFromEmployee;
+
+    @Column(name = "available_votes_count_from_employer", nullable = false)
+    private int availableVotesCountFromEmployer;
+
+    @OneToMany(mappedBy = "employeeToEmployer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Vote> votes;
 }

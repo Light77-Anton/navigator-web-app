@@ -28,6 +28,12 @@ public class Language {
     @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InfoFromEmployee> infoFromEmployees;
 
+    @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InfoAboutVacancyFromEmployer> infoAboutVacancyFromEmployers;
+
+    @OneToMany(mappedBy = "additionalLanguage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<LastRequest> additionalLanguagesOfLastRequests;
+
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "languages_to_users",
             joinColumns = {@JoinColumn(name = "language_id")},
@@ -35,14 +41,8 @@ public class Language {
     private List<User> users;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions_to_users",
-            joinColumns = {@JoinColumn(name = "employee_id")},
-            inverseJoinColumns = {@JoinColumn(name = "profession_id"), @JoinColumn(name = "language_id")})
-    private List<EmployeeData> employeeDataList;
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "professions_to_users",
-            joinColumns = {@JoinColumn(name = "profession_id")},
-            inverseJoinColumns = {@JoinColumn(name = "employee_id"), @JoinColumn(name = "language_id")})
-    private List<Profession> professions;
+    @JoinTable(name = "languages_to_last_request",
+            joinColumns = {@JoinColumn(name = "language_id")},
+            inverseJoinColumns = {@JoinColumn(name = "last_request_id")})
+    private List<LastRequest> lastRequestsList;
 }

@@ -3,6 +3,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,7 +18,7 @@ public class LastRequest {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "last_request_id", nullable = false)
+    @JoinColumn(name = "profession_id", nullable = false)
     private Profession profession;
 
     @Column(name = "limit", nullable = false)
@@ -28,6 +29,16 @@ public class LastRequest {
 
     @Column(name = "are_languages_matched", nullable = false)
     private boolean areLanguagesMatched;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "languages_to_last_request",
+            joinColumns = {@JoinColumn(name = "last_request_id")},
+            inverseJoinColumns = {@JoinColumn(name = "language_id")})
+    private List<Language> communicationLanguages;
+
+    @ManyToOne
+    @JoinColumn(name = "additional_language_id")
+    private Language additionalLanguage;
 
     @Column(name = "in_radius_of", nullable = false)
     private int inRadiusOf;

@@ -13,8 +13,8 @@ public class UserInfoResponse {
     private String socialNetworksLinks;
     private List<String> communicationLanguages;
     private String endonymInterfaceLanguage;
-    private List<Vote> votes;
-    private double ranking;
+    private byte ranking;
+    private byte currentWorkDisplay;
     private boolean isBlocked;
     private String name;
     private String email;
@@ -22,6 +22,7 @@ public class UserInfoResponse {
     private String lastRequest;
     private int limitOfTheSearch;
     private boolean isMultivacancyAllowed;
+    private boolean showTemporarilyInactiveEmployees;
     private boolean areLanguagesMatched;
     private EmployeeData employeeData;
     private EmployerRequests employerRequests;

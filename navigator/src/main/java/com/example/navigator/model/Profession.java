@@ -19,8 +19,8 @@ public class Profession {
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "professions_to_users",
-            joinColumns = {@JoinColumn(name = "employee_id")},
-            inverseJoinColumns = {@JoinColumn(name = "profession_id")})
+            joinColumns = {@JoinColumn(name = "profession_id")},
+            inverseJoinColumns = {@JoinColumn(name = "employee_id")})
     private List<EmployeeData> employeeDataList;
 
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -29,5 +29,6 @@ public class Profession {
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProfessionName> professionNames;
 
-    private
+    @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<LastRequest> lastRequests;
 }

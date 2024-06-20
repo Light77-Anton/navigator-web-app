@@ -20,6 +20,6 @@ public class Vote {
     private byte value;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "employee_to_employer")
+    private EmployeeToEmployer employeeToEmployer;
 }
