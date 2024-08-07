@@ -58,7 +58,7 @@ public class GeneralController {
     }
 
     @GetMapping("professions/names/list/get")
-    public ResponseEntity<TextListResponse> getProfessionsNamesInSpecifiedLanguage() {
+    public ResponseEntity<ProfessionNamesListResponse> getProfessionsNamesInSpecifiedLanguage() {
 
         return ResponseEntity.ok(systemService.getProfessionsNamesInSpecifiedLanguage());
     }
@@ -315,6 +315,21 @@ public class GeneralController {
     @PutMapping("user/display/change")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
     public ResponseEntity<ResultErrorsResponse> changeWorkDisplay() {
+
+        return ResponseEntity.ok();
+    }
+
+    @PutMapping("user/employee/work/info/change")
+    @PreAuthorize("hasAuthority('user:work')")
+    public ResponseEntity<ResultErrorsResponse> changeInfoFromEmployeeForEmployers
+            (@RequestBody EmployeeInfoForEmployersRequest employeeInfoForEmployersRequest) {
+
+        return ResponseEntity.ok();
+    }
+
+    @GetMapping("user/timers/list/get")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<TimersListResponse> getTimersList () {
 
         return ResponseEntity.ok();
     }

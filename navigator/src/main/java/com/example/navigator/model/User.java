@@ -3,6 +3,7 @@ import javax.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +44,9 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
     @Column(name = "email", nullable = false)
     private String email;
 
@@ -67,6 +71,18 @@ public class User {
 
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChatMessage> receivedMessages;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> commentsFromUser;
+
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> commentsToUser;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Vote> votesFromUser;
+
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Vote> votesToUser;
 
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn

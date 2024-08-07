@@ -11,19 +11,35 @@ import javax.persistence.*;
 @Table(name = "comments")
 public class Comment {
 
-    public Comment(long fromId, long toId) {
-        this.fromId = fromId;
-        this.toId = toId;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private Long id;
 
-    @EmbeddedId
-    private CommentId id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private User sender;
 
-    @Column(name = "from_user_id", insertable = false, updatable = false, nullable = false)
-    private long fromId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipient_id")
+    private User recipient;
 
-    @Column(name = "to_user_id", insertable = false, updatable = false, nullable = false)
-    private long toId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_sender_id")
+    private EmployeeData employeeSender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_recipient_id")
+    private Company companyRecipient;
+
+    @Column(name = "is_official_comment", nullable = false)
+    private boolean isOfficialComment;
+
+    @Column(name = "is_comment_for_user", nullable = false)
+    private boolean isCommentForUser;
+
+    @Column(name = "is_comment_for_company", nullable = false)
+    private boolean isCommentForCompany;
 
     @Column(name = "content", nullable = false)
     private String content;

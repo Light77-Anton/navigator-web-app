@@ -25,6 +25,18 @@ public class Vacancy {
     @Column(name = "quotas_number", nullable = false)
     private int quotasNumber;
 
+    @Column(name = "type", nullable = false)
+    private String type;
+
+    @Column(name = "status", nullable = false)
+    private String status;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "employee_to_vacancy",
+            joinColumns = {@JoinColumn(name = "vacancy_id")},
+            inverseJoinColumns = {@JoinColumn(name = "employee_id")})
+    private List<EmployeeData> hiredEmployees;
+
     @OneToOne(mappedBy = "vacancy", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private JobLocation jobLocation;

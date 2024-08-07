@@ -26,6 +26,12 @@ public class EmployeeData {
     private boolean isMultivacancyAllowed;
 
     @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "employee_to_vacancy",
+            joinColumns = {@JoinColumn(name = "employee_id")},
+            inverseJoinColumns = {@JoinColumn(name = "vacancy_id")})
+    private List<Vacancy> acceptedVacancies;
+
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "professions_to_users",
             joinColumns = {@JoinColumn(name = "employee_id")},
             inverseJoinColumns = {@JoinColumn(name = "profession_id")})
@@ -50,4 +56,10 @@ public class EmployeeData {
 
     @OneToMany(mappedBy = "employeeData", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<InfoFromEmployee> infoFromEmployee;
+
+    @Column(name = "default_offer_refusing_time_millis", nullable = false)
+    private long defaultOfferRefusingTimeMillis;
+
+    @OneToMany(mappedBy = "employeeSender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> commentsToCompany;
 }

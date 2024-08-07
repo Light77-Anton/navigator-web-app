@@ -19,7 +19,11 @@ public class Vote {
     @Column(name = "value", nullable = false)
     private byte value;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_to_employer")
-    private EmployeeToEmployer employeeToEmployer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipient_id", nullable = false)
+    private User recipient;
 }

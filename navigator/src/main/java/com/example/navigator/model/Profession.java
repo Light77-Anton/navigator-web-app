@@ -31,4 +31,7 @@ public class Profession {
 
     @OneToMany(mappedBy = "profession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<LastRequest> lastRequests;
+
+    @Column(name = "default_offer_refusing_time_millis", nullable = false)
+    private long defaultOfferRefusingTimeMillis;
 }
