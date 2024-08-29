@@ -10,5 +10,6 @@ public class VacancyInfoResponse {
     private String professionName;
     private String jobAddress;
     private LocalDateTime localDateTime;
+    private LocalDateTime vacancyAvailability;
     private String paymentAndAdditionalInfo;
 }

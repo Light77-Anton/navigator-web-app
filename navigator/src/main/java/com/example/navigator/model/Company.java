@@ -22,4 +22,7 @@ public class Company {
 
     @OneToMany(mappedBy = "companyRecipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Comment> commentsToCompany;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<EmployerRequests> employers;
 }

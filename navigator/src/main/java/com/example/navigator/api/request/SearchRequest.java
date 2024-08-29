@@ -13,6 +13,8 @@ public class SearchRequest {
 
     @JsonProperty("profession")
     private String professionName;
+    @JsonProperty("additional_languages")
+    private String[] additionalLanguages;
     @JsonProperty("limit")
     private int limit;
     @JsonProperty("is_auto")

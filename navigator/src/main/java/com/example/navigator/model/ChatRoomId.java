@@ -13,14 +13,14 @@ public class ChatRoomId implements Serializable {
 
     }
 
-    public ChatRoomId(long senderId, long recipientId) {
-        this.senderId = senderId;
-        this.recipientId = recipientId;
+    public ChatRoomId(long employeeId, long employerId) {
+        this.employeeId = employeeId;
+        this.employerId = employerId;
     }
 
     @Column(name = "sender_id", insertable = false, updatable = false, nullable = false)
-    private long senderId;
+    private long employeeId;
 
     @Column(name = "recipient_id", insertable = false, updatable = false, nullable = false)
-    private long recipientId;
+    private long employerId;
 }

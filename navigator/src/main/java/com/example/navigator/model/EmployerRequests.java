@@ -16,8 +16,9 @@ public class EmployerRequests {
     @Column(name = "employer_id")
     private Long id;
 
-    @Column(name = "firm_name")
-    private String firmName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @Column(name = "is_multivacancy_allowed_in_search", nullable = false)
     private boolean isMultivacancyAllowedInSearch;

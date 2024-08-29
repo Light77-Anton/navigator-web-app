@@ -41,10 +41,10 @@ public class Vacancy {
     @PrimaryKeyJoinColumn
     private JobLocation jobLocation;
 
-    @Column(name = "start_date_time", nullable = false)
+    @Column(name = "start_date_time")
     private LocalDateTime startDateTime;
 
-    @Column(name = "waiting_date_time", nullable = false)
+    @Column(name = "waiting_date_time")
     private LocalDateTime waitingDateTime;
 
     @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

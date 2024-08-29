@@ -252,16 +252,23 @@ public class GeneralController {
 
     @PostMapping("user/{id}/favorite/{decision}")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> favorite(@PathVariable long favoriteId, @PathVariable String decision) {
+    public ResponseEntity<ResultErrorsResponse> favorite(@PathVariable long id, @PathVariable String decision) {
 
-        return ResponseEntity.ok(profileService.changeFavoritesList(favoriteId, decision));
+        return ResponseEntity.ok(profileService.changeFavoritesList(id, decision));
     }
 
     @PostMapping("user/{id}/blacklist/{decision}")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> blackList(@PathVariable long bannedId, @PathVariable String decision) {
+    public ResponseEntity<ResultErrorsResponse> blackList(@PathVariable long id, @PathVariable String decision) {
 
-        return ResponseEntity.ok(profileService.changeBlackList(bannedId, decision));
+        return ResponseEntity.ok(profileService.changeBlackList(id, decision));
+    }
+
+    @GetMapping("user/{id}/relationship/status")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<RelationshipStatusResponse> getRelationshipStatus(@PathVariable long id) {
+
+        return ResponseEntity.ok();
     }
 
     @GetMapping("user/sender/get")

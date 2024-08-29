@@ -44,9 +44,9 @@ public class SearchController {
         return ResponseEntity.ok(searchService.setVacancy(vacancyRequest));
     }
 
-    @GetMapping("employer/vacancy/get")
-    @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<VacancyInfoResponse> getVacancyById(@RequestBody StringRequest stringRequest) {
+    @GetMapping("vacancy/{id}/get")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<VacancyInfoResponse> getVacancyById(@PathVariable String id) {
 
         return ResponseEntity.ok(searchService.getVacancyById(stringRequest));
     }
@@ -65,16 +65,16 @@ public class SearchController {
         return ResponseEntity.ok(searchService.getEmployeesOfChosenProfession(searchRequest));
     }
 
-    @GetMapping("employee/info")
+    @GetMapping("employee/{id}/info")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@RequestBody StringRequest stringRequest) {
+    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@PathVariable String id) {
 
         return ResponseEntity.ok(profileService.getEmployeeInfo(stringRequest));
     }
 
-    @GetMapping("employer/info")
+    @GetMapping("employer/{id}/info")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@RequestBody StringRequest stringRequest) {
+    public ResponseEntity<ExtendedUserInfoResponse> getEmployerInfo(@PathVariable String id) {
 
         return ResponseEntity.ok(profileService.getEmployerInfo(stringRequest));
     }

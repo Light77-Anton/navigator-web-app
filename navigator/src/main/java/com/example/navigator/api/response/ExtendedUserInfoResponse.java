@@ -11,7 +11,7 @@ public class ExtendedUserInfoResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private double rating;
+    private byte rating;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -23,13 +23,17 @@ public class ExtendedUserInfoResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String avatar;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String employeesWorkRequirements;
+    private String infoFromEmployee;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String languages;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean isDriverLicense;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean isAuto;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private HashMap<String, String> ProfessionsAndInfoAboutIt;
+    private String professions;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String socialNetworksLinks;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
 

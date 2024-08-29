@@ -26,6 +26,7 @@ public class UserInfoResponse {
     private boolean areLanguagesMatched;
     private EmployeeData employeeData;
     private EmployerRequests employerRequests;
+    private List<ChatMessage> receivedMessages;
     private LocalDateTime regTime;
     private String role;
     private String avatar;
