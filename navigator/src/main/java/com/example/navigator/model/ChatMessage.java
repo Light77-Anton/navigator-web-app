@@ -41,8 +41,11 @@ public class ChatMessage implements Comparable<ChatMessage> {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "is_image", nullable = false)
-    private boolean isImage;
+    @Column(name = "message_type", nullable = false)
+    private String messageType;
+
+    @OneToOne(mappedBy = "referencedChatMessage")
+    private Vacancy vacancy;
 
     @Override
     public int compareTo(ChatMessage o) {

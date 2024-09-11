@@ -25,11 +25,15 @@ public class Vacancy {
     @Column(name = "quotas_number", nullable = false)
     private int quotasNumber;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "type", nullable = false) // public, private, template
     private String type;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false) // active,
     private String status;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "chat_message_id", referencedColumnName = "id")
+    private ChatMessage referencedChatMessage;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "employee_to_vacancy",

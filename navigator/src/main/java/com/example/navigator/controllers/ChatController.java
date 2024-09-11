@@ -1,7 +1,6 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.ChatRequest;
 import com.example.navigator.api.request.DecisionRequest;
-import com.example.navigator.api.request.EmployerPassiveSearchRequest;
 import com.example.navigator.api.request.VacancyRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.service.ChatMessageService;
@@ -54,10 +53,10 @@ public class ChatController {
         return ResponseEntity.ok(terminateJobResponse);
     }
 
-    @MessageMapping("offer/answer")
+    @MessageMapping("offer/decision")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<AnswerToOfferResponse> giveAnswerToOffer(@Payload DecisionRequest decision, Principal principal) {
-        AnswerToOfferResponse answerToOfferResponse = chatMessageService.answerToOffer(decision, principal);
+    public ResponseEntity<AnswerToOfferResponse> giveDecisionToOffer(@RequestBody DecisionRequest decision) {
+        AnswerToOfferResponse answerToOfferResponse = chatMessageService.answerToOffer(decision);
         if (answerToOfferResponse.getError().isEmpty()) {
             messagingTemplate.convertAndSendToUser(answerToOfferResponse.getRecipientId().toString(), URL, answerToOfferResponse);
         }
@@ -79,10 +78,9 @@ public class ChatController {
         return ResponseEntity.ok(resultErrorsResponse);
     }
 
-    @MessageMapping("employee/offer")
+    @MessageMapping("employee/offer/{userId}")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ExtendedUserInfoResponse> sendEmployeesOffer(
-            @Payload EmployerPassiveSearchRequest employerPassiveSearchRequest) {
+    public ResponseEntity<ExtendedUserInfoResponse> sendEmployeesOffer(@DestinationVariable("userId") String userId) {
         ExtendedUserInfoResponse extendedUserInfoResponse = chatMessageService
                 .sendEmployeesOffer(employerPassiveSearchRequest);
         if (extendedUserInfoResponse.getError() == null) {

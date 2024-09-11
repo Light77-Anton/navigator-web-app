@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class VacancyRequest {
 
-    @JsonProperty("recipient_id")
-    private Long recipientId;
+    @JsonProperty("vacancy_id")
+    private Long vacancyId;
     @JsonProperty("profession_name")
     private String professionName;
     @JsonProperty("job_address")

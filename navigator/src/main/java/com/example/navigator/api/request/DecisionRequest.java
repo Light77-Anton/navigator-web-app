@@ -13,8 +13,8 @@ public class DecisionRequest {
 
     @JsonProperty("decision")
     private String decision;
-    @JsonProperty("net_confirmed_job_id")
-    private Long notConfirmedJobId;
-    @JsonProperty("passive_search_id")
-    private Long passiveSearchId;
+    @JsonProperty("recipient_id")
+    private String recipientId;
+    @JsonProperty("vacancy_id")
+    private String vacancyId;
 }
