@@ -1,5 +1,6 @@
 package com.example.navigator.dto;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class TimerDTO {
@@ -9,4 +10,5 @@ public class TimerDTO {
     private String address;
     private String profession;
     private long millisInFuture;
+    private Long contactedPersonId;
 }

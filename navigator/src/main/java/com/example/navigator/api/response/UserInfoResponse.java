@@ -33,4 +33,5 @@ public class UserInfoResponse {
     private List<User> blackList;
     private List<User> favorites;
     private UserLocation userLocation;
+    private int notificationCount;
 }

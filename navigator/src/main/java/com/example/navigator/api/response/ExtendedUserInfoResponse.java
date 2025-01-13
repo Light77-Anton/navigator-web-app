@@ -13,6 +13,8 @@ public class ExtendedUserInfoResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private byte rating;
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long id;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String firmName;

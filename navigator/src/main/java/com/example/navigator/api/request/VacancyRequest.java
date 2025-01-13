@@ -28,4 +28,8 @@ public class VacancyRequest {
     private LocalDateTime startTimestamp;
     @JsonProperty("payment_and_additional_info")
     private String paymentAndAdditionalInfo;
+    @JsonProperty("profession_name")
+    private Long employerId;
+    @JsonProperty("profession_name")
+    private String employerName;
 }

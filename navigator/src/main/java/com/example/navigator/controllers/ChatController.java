@@ -3,6 +3,7 @@ import com.example.navigator.api.request.ChatRequest;
 import com.example.navigator.api.request.DecisionRequest;
 import com.example.navigator.api.request.VacancyRequest;
 import com.example.navigator.api.response.*;
+import com.example.navigator.model.ChatMessage;
 import com.example.navigator.service.ChatMessageService;
 import com.example.navigator.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -31,7 +33,21 @@ public class ChatController {
     private ChatMessageService chatMessageService;
     @Autowired
     private SearchService searchService;
-    private final String URL = "/user/messages";
+    private final String URL = "/queue/reply";
+
+    @MessageMapping("message/get")
+    @SendTo("queue/{id}")
+    public ResponseEntity<> getIncomingMessage(@Payload Object messageObject, @PathVariable long id) {
+        if (messageObject instanceof ChatMessage) { // переписка
+
+        } else if (messageObject instanceof ExtendedUserInfoResponse) { // предложение от рабочего
+
+        } else if (messageObject instanceof VacancyRequest) { // предложение от рабочетодателя
+
+        } else if () {
+
+        }
+    }
 
     @MessageMapping("response/job/terminate")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")

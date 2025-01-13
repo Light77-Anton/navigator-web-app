@@ -17,5 +17,4 @@ public class ChatMessageResponse {
     private ChatMessage message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long messageCount;
-
 }
