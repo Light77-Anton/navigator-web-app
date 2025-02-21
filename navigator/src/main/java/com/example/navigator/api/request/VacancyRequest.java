@@ -16,6 +16,8 @@ public class VacancyRequest {
     private Long vacancyId;
     @JsonProperty("profession_name")
     private String professionName;
+    @JsonProperty("quotas_number")
+    private int quotasNumber;
     @JsonProperty("job_address")
     private String jobAddress;
     @JsonProperty("latitude")
@@ -32,4 +34,10 @@ public class VacancyRequest {
     private Long employerId;
     @JsonProperty("profession_name")
     private String employerName;
+    @JsonProperty("is_required_to_close_all_quotas")
+    private boolean isRequiredToCloseAllQuotas;
+    @JsonProperty("save_template")
+    private boolean saveTemplate;
+    @JsonProperty("template_name")
+    private String templateName;
 }

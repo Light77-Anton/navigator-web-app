@@ -28,8 +28,11 @@ public class Vacancy {
     @Column(name = "type", nullable = false) // public, private, template
     private String type;
 
-    @Column(name = "status", nullable = false) // active,
-    private String status;
+    @Column(name = "template_name")
+    private String templateName;
+
+    @Column(name = "is_necessary_to_close_all_quotas")
+    private boolean isNecessaryToCloseAllQuotas;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "chat_message_id", referencedColumnName = "id")
@@ -51,8 +54,8 @@ public class Vacancy {
     @Column(name = "waiting_date_time")
     private LocalDateTime waitingDateTime;
 
-    @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<InfoAboutVacancyFromEmployer> paymentAndAdditionalInfo;
+    @Column(name = "payment_and_additional_info")
+    private String paymentAndAdditionalInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employer_requests_id", nullable = false)

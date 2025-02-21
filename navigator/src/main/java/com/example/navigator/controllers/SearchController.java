@@ -51,11 +51,11 @@ public class SearchController {
         return ResponseEntity.ok(searchService.getVacancyById(stringRequest));
     }
 
-    @GetMapping("employer/vacancy/delete")
+    @DeleteMapping("vacancy/{id}/delete")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> deleteVacancyById(@RequestBody StringRequest stringRequest) {
+    public ResponseEntity<ResultErrorsResponse> deleteVacancyById(@PathVariable String id) {
 
-        return ResponseEntity.ok(searchService.deleteVacancyById(stringRequest));
+        return ResponseEntity.ok(searchService.deleteVacancyById(id));
     }
 
     @GetMapping("employees")

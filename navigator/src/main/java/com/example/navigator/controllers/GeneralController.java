@@ -27,6 +27,12 @@ public class GeneralController {
         this.systemService = systemService;
     }
 
+    @GetMapping("templates/get")
+    public ResponseEntity<VacancyListResponse> getTemplatesList() {
+
+        return ResponseEntity.ok();
+    }
+
     @GetMapping("system/message/get")
     public ResponseEntity<StringResponse> getMessageInSpecifiedLanguage
             (@RequestBody InProgramMessageRequest inProgramMessageRequest) {
@@ -64,9 +70,9 @@ public class GeneralController {
     }
 
     @GetMapping("profession/get/by/name")
-    public ResponseEntity<IdResponse> getProfessionIdByName(@RequestBody StringRequest stringRequest) {
+    public ResponseEntity<IdResponse> getProfessionIdByName(@RequestBody String professionName) {
 
-        return ResponseEntity.ok(systemService.getProfessionIdByName(stringRequest));
+        return ResponseEntity.ok(systemService.getProfessionIdByName(professionName));
     }
 
     @GetMapping("info/from/employee/get")
