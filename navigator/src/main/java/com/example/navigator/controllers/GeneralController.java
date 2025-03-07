@@ -86,9 +86,9 @@ public class GeneralController {
     @GetMapping("professions/to/employee/get")
     @PreAuthorize("hasAuthority('user:hire')")
     public ResponseEntity<StringResponse> getProfessionsToUserInEmployersLanguage
-            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
+            (@RequestBody long id) {
 
-        return ResponseEntity.ok(profileService.getProfessionsToUserInEmployersLanguage(professionToUserRequest));
+        return ResponseEntity.ok(profileService.getProfessionsToUserInEmployersLanguage(id));
     }
 
     @GetMapping("profession/to/user/get")

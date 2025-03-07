@@ -1,8 +1,10 @@
 package com.example.navigator.api.response;
+import com.example.navigator.model.Vote;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.stereotype.Component;
-import java.util.HashMap;
+
+import java.util.List;
 
 @Component
 @Data
@@ -36,6 +38,8 @@ public class ExtendedUserInfoResponse {
     private String professions;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String socialNetworksLinks;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Vote> votesToUser;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
 

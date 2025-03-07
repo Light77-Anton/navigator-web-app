@@ -54,8 +54,8 @@ public class EmployeeData {
     @JoinColumn(name = "employee_id", nullable = false)
     private User employee;
 
-    @OneToMany(mappedBy = "employeeData", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<InfoFromEmployee> infoFromEmployee;
+    @Column(name = "info_from_employee")
+    private List<String> infoFromEmployee;
 
     @Column(name = "default_offer_refusing_time_millis", nullable = false)
     private long defaultOfferRefusingTimeMillis;
