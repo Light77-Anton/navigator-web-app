@@ -20,9 +20,6 @@ public class Company {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "companyRecipient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Comment> commentsToCompany;
-
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<EmployerRequests> employers;
 }

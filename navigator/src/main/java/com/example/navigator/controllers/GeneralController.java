@@ -124,7 +124,6 @@ public class GeneralController {
         return ResponseEntity.ok(mapTextResponse);
     }
 
-
     @GetMapping("language/get")
     public ResponseEntity<StringResponse> getUsersInterfaceLanguage() {
 
@@ -254,6 +253,13 @@ public class GeneralController {
     public ResponseEntity<ResultErrorsResponse> comment(@RequestBody CommentRequest commentRequest) {
 
         return ResponseEntity.ok(profileService.comment(commentRequest));
+    }
+
+    @GetMapping("get/{id}/comments")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<CommentsListResponse> getCommentsListByUserId(@PathVariable long id) {
+
+        return ResponseEntity.ok(profileService.getCommentsByUserId(id));
     }
 
     @PostMapping("user/{id}/favorite/{decision}")

@@ -26,4 +26,8 @@ public class Vote {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
+
+    @OneToOne(mappedBy = "vote", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private Comment initialComment;
 }
