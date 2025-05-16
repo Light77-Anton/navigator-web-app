@@ -55,12 +55,11 @@ public class GeneralController {
         return ResponseEntity.ok(systemService.getAdditionalInfoAboutVacancyInSpecifiedLanguage(professionToUserRequest));
     }
 
-    @GetMapping("profession/name/get")
+    @GetMapping("profession/{id}/name/get")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<StringResponse> getProfessionNameInSpecifiedLanguage
-            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<StringResponse> getProfessionNameInSpecifiedLanguage(@PathVariable long id) {
 
-        return ResponseEntity.ok(systemService.getProfessionNameByIdAndLanguage(professionToUserRequest));
+        return ResponseEntity.ok(systemService.getProfessionNameByIdAndLanguage(id));
     }
 
     @GetMapping("professions/names/list/get")
