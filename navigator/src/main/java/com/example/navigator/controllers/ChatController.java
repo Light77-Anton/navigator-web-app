@@ -35,18 +35,27 @@ public class ChatController {
     private SearchService searchService;
     private final String URL = "/queue/reply";
 
+
+
     @MessageMapping("message/get")
     @SendTo("queue/{id}")
-    public ResponseEntity<> getIncomingMessage(@Payload Object messageObject, @PathVariable long id) {
+    public ResponseEntity<ChatMessageResponse> handleIncomingMessage(@Payload Object messageObject, @PathVariable("id") long id) {
+        ChatMessageResponse response = null;
         if (messageObject instanceof ChatMessage) { // переписка
-
-        } else if (messageObject instanceof ExtendedUserInfoResponse) { // предложение от рабочего
-
-        } else if (messageObject instanceof VacancyRequest) { // предложение от рабочетодателя
-
-        } else if () {
-
+            response = chatMessageService.saveNewMessage(null, null, (ChatMessage) messageObject,
+                    null, null, null, null);
+        } if (messageObject instanceof ExtendedUserInfoResponse) { // предложение от рабочего
+            response = chatMessageService.saveNewMessage(null, null, null,
+                    (ExtendedUserInfoResponse) messageObject, null, null, null);
+        } if (messageObject instanceof VacancyRequest) { // предложение от работодателя
+            response = chatMessageService.saveNewMessage(null, null, null, null,
+                    (VacancyRequest) messageObject, null, null);
+        } if (messageObject instanceof AnswerToOfferResponse) { // предложение от работодателя
+            response = chatMessageService.saveNewMessage((AnswerToOfferResponse) messageObject, null, null,
+                    null, null, null, null);
         }
+
+        return ResponseEntity.ok(response);
     }
 
     @MessageMapping("response/job/terminate")
@@ -73,7 +82,7 @@ public class ChatController {
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
     public ResponseEntity<AnswerToOfferResponse> giveDecisionToOffer(@RequestBody DecisionRequest decision) {
         AnswerToOfferResponse answerToOfferResponse = chatMessageService.answerToOffer(decision);
-        if (answerToOfferResponse.getError().isEmpty()) {
+        if (answerToOfferResponse.isResult()) {
             messagingTemplate.convertAndSendToUser(answerToOfferResponse.getRecipientId().toString(), URL, answerToOfferResponse);
         }
 
@@ -82,36 +91,40 @@ public class ChatController {
 
     @MessageMapping("employer/offer/{userId}")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> sendOfferFromEmployer(@DestinationVariable("userId") String userId,
+    public ResponseEntity<ChatMessageResponse> sendOfferFromEmployer(@DestinationVariable("userId") String userId,
                                                                       @RequestBody VacancyRequest vacancyRequest) {
-        ResultErrorsResponse resultErrorsResponse = chatMessageService.checkOfferFromEmployer(vacancyRequest);
-        if (resultErrorsResponse.isResult()) {
+        ChatMessageResponse chatMessageResponse = chatMessageService.saveNewMessage(null, null, null,
+                null , vacancyRequest, Long.parseLong(userId), null);
+        if (chatMessageResponse.getResult()) {
             Map<String, Object> header = new HashMap<>();
             header.put("payload_type", "vacancy_request");
             messagingTemplate.convertAndSendToUser(userId, URL, vacancyRequest, header);
         }
 
-        return ResponseEntity.ok(resultErrorsResponse);
+        return ResponseEntity.ok(chatMessageResponse);
     }
 
     @MessageMapping("employee/offer/{userId}")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ExtendedUserInfoResponse> sendEmployeesOffer(@DestinationVariable("userId") String userId) {
-        ExtendedUserInfoResponse extendedUserInfoResponse = chatMessageService
-                .sendEmployeesOffer(employerPassiveSearchRequest);
-        if (extendedUserInfoResponse.getError() == null) {
-            messagingTemplate.convertAndSendToUser
-                    (extendedUserInfoResponse.getToEmployerId().toString(), URL, extendedUserInfoResponse);
+    public ResponseEntity<ChatMessageResponse> sendEmployeesOffer(@DestinationVariable("userId") String userId,
+                                                                       VacancyRequest vacancyRequest) {
+        ChatMessageResponse chatMessageResponse = chatMessageService.saveNewMessage(null, null, null,
+                null , vacancyRequest, null, Long.parseLong(userId));
+        if (chatMessageResponse.getResult()) {
+            Map<String, Object> header = new HashMap<>();
+            header.put("payload_type", "vacancy_request");
+            messagingTemplate.convertAndSendToUser(userId, URL, vacancyRequest, header);
         }
 
-        return ResponseEntity.ok(extendedUserInfoResponse);
+        return ResponseEntity.ok(chatMessageResponse);
     }
 
     @MessageMapping("message/{userId}")
     @PreAuthorize("hasAuthority('user:work') or hasAuthority('user:hire') or hasAuthority('user:moderate')")
     public ResponseEntity<ChatMessageResponse> processMessage(@DestinationVariable("userId") String userId,
                                                               @RequestBody ChatRequest chatRequest) {
-        ChatMessageResponse response = chatMessageService.saveNewMessage(chatRequest);
+        ChatMessageResponse response = chatMessageService.saveNewMessage(null, chatRequest,
+                null, null, null, null ,null);
         Map<String, Object> header = new HashMap<>();
         header.put("payload_type", "chat_message");
         messagingTemplate.convertAndSendToUser(userId, URL, response.getMessage(), header);
@@ -133,9 +146,9 @@ public class ChatController {
         return ResponseEntity.ok(chatMessageService.findAllMessages(chatRequest));
     }
 
-    @GetMapping("messages/{id}")
+    @GetMapping("message/{id}")
     @PreAuthorize("hasAuthority('user:work') or hasAuthority('user:hire')")
-    public ResponseEntity<ChatMessageResponse> findMessage(@PathVariable long id) {
+    public ResponseEntity<ChatMessageResponse> findMessage(@PathVariable("id") long id) {
 
         return ResponseEntity.ok(chatMessageService.findById(id));
     }

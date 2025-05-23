@@ -40,4 +40,6 @@ public class VacancyRequest {
     private boolean saveTemplate;
     @JsonProperty("template_name")
     private String templateName;
+    @JsonProperty("employee_offer_content")
+    private String employeeOfferContent;
 }

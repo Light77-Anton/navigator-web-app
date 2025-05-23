@@ -43,7 +43,7 @@ public class EmployeeData {
             inverseJoinColumns = {@JoinColumn(name = "employer_id")})
     private List<EmployerRequests> contactedEmployers;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false) // -1 временно неактивен, 0 неактивен, 1 активен
     private byte status;
 
     @Column(name = "active_status_start_date")

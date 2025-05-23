@@ -38,10 +38,10 @@ public class ChatMessage implements Comparable<ChatMessage> {
     @Column(name = "time", nullable = false)
     private LocalDateTime time;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false) // SENT, RECEIVED, DELIVERED
     private String status;
 
-    @Column(name = "message_type", nullable = false)
+    @Column(name = "message_type", nullable = false) // OFFER, OFFER REFUSING, OFFER ACCEPTANCE, IMAGE, TEXT
     private String messageType;
 
     @OneToOne(mappedBy = "referencedChatMessage")

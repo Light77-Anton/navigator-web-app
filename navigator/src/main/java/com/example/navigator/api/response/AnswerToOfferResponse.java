@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 @Data
 public class AnswerToOfferResponse {
 
+    private byte decision;
     private boolean result;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long recipientId;

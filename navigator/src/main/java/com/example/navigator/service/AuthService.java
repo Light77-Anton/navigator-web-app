@@ -89,22 +89,6 @@ public class AuthService {
             loginResponse.setRole(currentUser.getRoleString());
             return loginResponse;
         }
-        /*
-        User currentUser = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
-        if (userRepository.userIsBlocked(currentUser.getId()) == 1) {
-            Optional<InProgramMessage> inProgramMessage = inProgramMessageRepository.findByCodeNameAndLanguage
-                    (ACCOUNT_IS_BANNED_MESSAGE_CODE, currentUser.getEndonymInterfaceLanguage());
-            if (inProgramMessage.isPresent()) {
-                loginResponse.setBlockMessage(inProgramMessage.get().getMessage());
-            } else {
-                loginResponse.setBlockMessage(inProgramMessageRepository.findByCodeNameAndLanguage
-                        (ACCOUNT_IS_BANNED_MESSAGE_CODE, DEFAULT_LANGUAGE).get().getMessage());
-            }
-            loginResponse.setUserId(currentUser.getId());
-            return loginResponse;
-        }
-         */
 
         return loginResponse;
     }
@@ -172,7 +156,7 @@ public class AuthService {
                 errorsList.add(INCORRECT_PHONE);
             }
         }
-        if (registrationRequest.getSocialNetworksLinks().length() > 30) {
+        if (registrationRequest.getSocialNetworksLinks().length() > 50) {
             errorsList.add(SOCIAL_NETWORKS_TEXT_TOO_LONG);
         }
         if (registrationRequest.getCommunicationLanguage() == null
@@ -196,7 +180,7 @@ public class AuthService {
         EmployerRequests employerRequests = null;
         User user = new User();
         List<Language> languages = new ArrayList<>();
-        languages.add(languageRepository.findByName(registrationRequest.getCommunicationLanguage()).get());
+        languages.add(languageRepository.findByName(registrationRequest.getCommunicationLanguage()).get()); // при регистрации язык интерфейса = язык коммуникации
         user.setCommunicationLanguages(languages);
         user.setEndonymInterfaceLanguage(registrationRequest.getInterfaceLanguage());
         user.setEmail(registrationRequest.getEmail());
@@ -209,29 +193,31 @@ public class AuthService {
         user.setBlocked(false);
         user.setActivated(false);
         user.setSocialNetworksLinks(registrationRequest.getSocialNetworksLinks());
+        UserLocation userLocation = new UserLocation();
+        userLocation.setUser(user);
+        userLocation.setLastUpdateTime(LocalDateTime.now());
+        userLocation.setLongitude(0.0);
+        userLocation.setLatitude(0.0);
+        user.setUserLocation(userLocation);
         if (registrationRequest.getRole().equals("Employer")) {
             user.setRole("Employer");
             employerRequests = new EmployerRequests();
             employerRequests.setEmployer(user);
-            employerRequests.setJobs(new ArrayList<>());
             user.setEmployerRequests(employerRequests);
         } else {
             user.setRole("Employee");
             employeeData = new EmployeeData();
-            employeeData.setStatus("INACTIVE");
-            employeeData.setDriverLicense(registrationRequest.isDriverLicense());
-            employeeData.setAuto(registrationRequest.isAuto());
+            employeeData.setStatus((byte) 0);
             employeeData.setEmployee(user);
             user.setEmployeeData(employeeData);
         }
-        UserLocation userLocation = new UserLocation();
-        userLocation.setLatitude(registrationRequest.getLatitude());
-        userLocation.setLongitude(registrationRequest.getLongitude());
-        userLocation.setCity(registrationRequest.getCity());
-        userLocation.setCountry(registrationRequest.getCountry());
-        userLocation.setUser(user);
-        user.setUserLocation(userLocation);
         userRepository.save(user);
+        if (employeeData != null) {
+            employeeDataRepository.save(employeeData);
+        }
+        if (employerRequests != null) {
+            employerRequestsRepository.save(employerRequests);
+        }
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom("NavigatorApp");
         mail.setTo(registrationRequest.getEmail());
@@ -240,15 +226,8 @@ public class AuthService {
         String message = checkAndGetMessageInSpecifiedLanguage(REGISTRATION_CONFIRMATION_MESSAGE_EMAIL,
                 registrationRequest.getInterfaceLanguage());
         mail.setText(message + "\n"
-                        + "http://localhost:8080/api/auth/account/activate/" + registratedUser.getId());
+                        + "http://localhost:8080/api/auth/account/activate/" + registratedUser.getId().toString());
         javaMailSender.send(mail);
-        if (employeeData != null) {
-            employeeDataRepository.save(employeeData);
-        }
-        if (employerRequests != null) {
-            employerRequestsRepository.save(employerRequests);
-        }
-        locationRepository.save(userLocation);
         resultErrorsResponse.setResult(true);
 
         return resultErrorsResponse;

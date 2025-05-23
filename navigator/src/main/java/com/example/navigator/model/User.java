@@ -29,7 +29,7 @@ public class User {
             inverseJoinColumns = {@JoinColumn(name = "language_id")})
     private List<Language> communicationLanguages;
 
-    @Column(name = "interface_language", nullable = false)
+    @Column(name = "interface_language", nullable = false) // не ссылается на сам Language т.к. обычно хватает только самоназвания
     private String endonymInterfaceLanguage;
 
     @Column(name = "ranking", nullable = false)

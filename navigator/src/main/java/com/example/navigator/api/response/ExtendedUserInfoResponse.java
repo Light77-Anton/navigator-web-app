@@ -3,13 +3,14 @@ import com.example.navigator.model.Vote;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 
 @Component
 @Data
 public class ExtendedUserInfoResponse {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private long vacancyId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -42,5 +43,4 @@ public class ExtendedUserInfoResponse {
     private List<Vote> votesToUser;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
-
 }

@@ -12,19 +12,19 @@ import java.util.List;
 @Table(name = "chat_rooms")
 public class ChatRoom {
 
-    public ChatRoom(long employeeId, long employerId) {
-        this.employeeId = employeeId;
-        this.employerId = employerId;
+    public ChatRoom(long senderId, long recipientId) {
+        this.senderId = senderId;
+        this.recipientId = recipientId;
     }
 
     @EmbeddedId
     private ChatRoomId id;
 
-    @Column(name = "employee_id", insertable = false, updatable = false, nullable = false)
-    private long employeeId;
+    @Column(name = "sender_id", insertable = false, updatable = false, nullable = false)
+    private long senderId;
 
-    @Column(name = "employer_id", insertable = false, updatable = false, nullable = false)
-    private long employerId;
+    @Column(name = "recipient_id", insertable = false, updatable = false, nullable = false)
+    private long recipientId;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChatMessage> messages;

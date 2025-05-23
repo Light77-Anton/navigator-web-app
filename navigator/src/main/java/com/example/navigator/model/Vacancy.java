@@ -25,7 +25,7 @@ public class Vacancy {
     @Column(name = "quotas_number", nullable = false)
     private int quotasNumber;
 
-    @Column(name = "type", nullable = false) // public, private, template
+    @Column(name = "type", nullable = false) // PUBLIC, PRIVATE, TEMPLATE
     private String type;
 
     @Column(name = "template_name")

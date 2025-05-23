@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import java.security.Principal;
 
 @Controller
 @RequestMapping("api/auth/")
@@ -69,7 +68,7 @@ public class AuthController {
     }
 
     @PutMapping("account/activate/{id}")
-    public ResponseEntity<StringResponse> activateAccount(@PathVariable Long userId) {
+    public ResponseEntity<StringResponse> activateAccount(@PathVariable("id") Long userId) {
 
         return ResponseEntity.ok(profileService.activateAccount(userId));
     }

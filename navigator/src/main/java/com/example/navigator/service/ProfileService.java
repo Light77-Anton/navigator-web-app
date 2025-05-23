@@ -38,13 +38,17 @@ public class ProfileService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private CaptchaRepository captchaRepository;
+    private ChatMessageRepository chatMessageRepository;
+    @Autowired
+    private ChatRoomRepository chatRoomRepository;
     @Autowired
     private FavoriteToUserRepository favoriteToUserRepository;
     @Autowired
     private BannedToUserRepository bannedToUserRepository;
     @Autowired
     private CommentRepository commentRepository;
+    @Autowired
+    private LastRequestRepository lastRequestRepository ;
     @Autowired
     private InProgramMessageRepository inProgramMessageRepository;
     @Autowired
@@ -394,6 +398,10 @@ public class ProfileService {
         Optional<User> user = userRepository.findByEmail(username);
         if (user.isPresent()) {
             deleteAccountResponse.setId(user.get().getId());
+            lastRequestRepository.deleteById(user.get().getId());
+            chatMessageRepository.deleteAllByUserId(user.get().getId());
+            chatRoomRepository.deleteAllByUserId(user.get().getId());
+            voteRepository
             if (user.get().getRole().equals(Role.EMPLOYEE)) {
                 if (user.get().getEmployeeData().getJobs()!= null) {
                     deleteAccountResponse.setError(checkAndGetMessageInSpecifiedLanguage

@@ -56,6 +56,9 @@ public class ChatMessageService {
     private final String INCORRECT_JOB_ADDRESS = "INCORRECT_JOB_ADDRESS";
     private final String TOO_MANY_ADDITIONAL_INFO = "TOO_MANY_ADDITIONAL_INFO";
     private final String SPECIFICATION_DATE_REQUIREMENT = "SPECIFICATION_DATE_REQUIREMENT";
+    private final String NO_MORE_QUOTAS = "NO_MORE_QUOTAS";
+    private final String USER_DECLINED_OFFER = "USER_DECLINED_OFFER";
+    private final String USER_ACCEPTED_OFFER = "USER_ACCEPTED_OFFER";
 
     /*
 
@@ -99,52 +102,60 @@ public class ChatMessageService {
         return inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get().getMessage();
     }
 
-    public AnswerToOfferResponse answerToOffer(DecisionRequest decisionRequest, Principal principal) {
+    public AnswerToOfferResponse answerToOffer(DecisionRequest decisionRequest) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
         AnswerToOfferResponse answerToOfferResponse = new AnswerToOfferResponse();
-        User user = userRepository.findByEmail(principal.getName()).get();
+        answerToOfferResponse.setRecipientId(Long.parseLong(decisionRequest.getRecipientId()));
         String decision = decisionRequest.getDecision();
-        Job job = jobRepository.findById(decisionRequest.getNotConfirmedJobId()).get();
+        Vacancy vacancy = vacancyRepository.findById(Long.parseLong(decisionRequest.getVacancyId())).get();
+        List<EmployeeData> hiredEmployees = vacancy.getHiredEmployees();;
         if (decision.equals("ACCEPT")) {
             if (user.getRole().equals(Role.EMPLOYEE)) {
-                job.setStatus("IN PROCESS");
-                job.setExpirationTime(null);
-                if (job.getDesignatedDateTime() != null) {
-                    LocalDate date = LocalDate.parse(job.getDesignatedDateTime().format(FORMAT));
-                    user.getEmployeeData().setStatus("Employee will be active "+ date.plusDays(1));
+                hiredEmployees.add(user.getEmployeeData());
+                if (hiredEmployees.size() == vacancy.getQuotasNumber()) {
+                    answerToOfferResponse.setResult(true);
+                    answerToOfferResponse.setDecision((byte) 1);
+                    vacancyRepository.deleteById(vacancy.getId());
+                } else if (hiredEmployees.size() > vacancy.getQuotasNumber()) {
+                    answerToOfferResponse.setResult(false);
+                    answerToOfferResponse.setError(checkAndGetMessageInSpecifiedLanguage(NO_MORE_QUOTAS,
+                            user.getEndonymInterfaceLanguage()));
                 } else {
-                    LocalDate endDate = LocalDate.parse(job.getEndDateTime().format(FORMAT));
-                    user.getEmployeeData().setStatus("Employee will be active " + endDate.plusDays(1));
+                    answerToOfferResponse.setResult(true);
+                    answerToOfferResponse.setDecision((byte) 1);
                 }
-                job.getEmployeeData().setStatus("INACTIVE");
-                userRepository.save(user);
-                jobRepository.save(job);
-                answerToOfferResponse.setResult(true);
-                answerToOfferResponse.setRecipientId(job.getEmployerRequests().getEmployer().getId());
-                return answerToOfferResponse;
             } else {
-                job.setStatus("IN PROCESS");
-                job.setExpirationTime(null);
-                if (job.getDesignatedDateTime() != null) {
-                    LocalDate date = LocalDate.parse(job.getDesignatedDateTime().format(FORMAT));
-                    job.getEmployeeData().setStatus("Employee will be active since " + date.plusDays(1));
+                Optional<User> employee = userRepository.findById(Long.parseLong(decisionRequest.getRecipientId()));
+                if (employee.isPresent()) {
+                    hiredEmployees.add(employee.get().getEmployeeData());
+                    if (hiredEmployees.size() == vacancy.getQuotasNumber()) {
+                        answerToOfferResponse.setResult(true);
+                        answerToOfferResponse.setDecision((byte) 1);
+                        vacancyRepository.deleteById(vacancy.getId());
+                    } else if (hiredEmployees.size() > vacancy.getQuotasNumber()) {
+                        answerToOfferResponse.setResult(false);
+                        answerToOfferResponse.setError(checkAndGetMessageInSpecifiedLanguage(NO_MORE_QUOTAS,
+                                user.getEndonymInterfaceLanguage()));
+                    } else {
+                        answerToOfferResponse.setResult(true);
+                        answerToOfferResponse.setDecision((byte) 1);
+                    }
                 } else {
-                    LocalDate endDate = LocalDate.parse(job.getEndDateTime().format(FORMAT));
-                    job.getEmployeeData().setStatus("Employee will be active " + endDate.plusDays(1));
+                    answerToOfferResponse.setResult(false);
+                    answerToOfferResponse.setError(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND,
+                            user.getEndonymInterfaceLanguage()));
                 }
-                job.getEmployeeData().setStatus("INACTIVE");
-                userRepository.save(user);
-                jobRepository.save(job);
-                answerToOfferResponse.setResult(true);
-                answerToOfferResponse.setRecipientId(job.getEmployerRequests().getEmployer().getId());
-                vacancyRepository.delete(vacancyRepository
-                        .findById(decisionRequest.getPassiveSearchId()).get());
-                return answerToOfferResponse;
             }
+        } else {
+            answerToOfferResponse.setResult(true);
+            answerToOfferResponse.setDecision((byte) 0);
         }
+
         return answerToOfferResponse;
     }
 
-    public ExtendedUserInfoResponse sendEmployeesOffer (EmployerPassiveSearchRequest employerPassiveSearchRequest) {
+    public ExtendedUserInfoResponse sendEmployeesOffer(EmployerPassiveSearchRequest employerPassiveSearchRequest) {
         ExtendedUserInfoResponse extendedUserInfoResponse = new ExtendedUserInfoResponse();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employee = userRepository.findByEmail(username).get();
@@ -195,69 +206,272 @@ public class ChatMessageService {
         return extendedUserInfoResponse;
     }
 
-    public ResultErrorsResponse checkOfferFromEmployer(VacancyRequest vacancyRequest) {
+    public ResultErrorsResponse checkOfferFromEmployer(long employeeId) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
         List<String> errors = new ArrayList<>();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employer = userRepository.findByEmail(username).get();
-        Optional<User> employee = userRepository.findById(vacancyRequest.getRecipientId());
+        Optional<User> employee = userRepository.findById(employeeId);
         if (employee.isEmpty()) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(USER_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
             resultErrorsResponse.setErrors(errors);
             return resultErrorsResponse;
         }
         resultErrorsResponse.setResult(true);
-        EmployeeToEmployer employeeToEmployer = new EmployeeToEmployer();
-        employeeToEmployer.setEmployerId(employer.getId());
-        employeeToEmployer.setEmployeeId(employee.get().getId());
-        employeeToEmployerRepository.save(employeeToEmployer);
 
         return resultErrorsResponse;
     }
 
-    public ChatMessageResponse saveNewMessage(ChatRequest chatRequest) {
+    public ChatMessageResponse saveNewMessage(AnswerToOfferResponse answerToOfferResponse,
+                                              ChatRequest chatRequest, ChatMessage chatMessage,
+                                              ExtendedUserInfoResponse extendedUserInfoResponse,
+                                              VacancyRequest vacancyRequest, Long employeeId, Long employerId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
-        ChatMessageResponse chatMessageResponse = new ChatMessageResponse();
-        chatMessageResponse.setResult(true);
-        ChatMessage chatMessage = new ChatMessage();
-        Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(chatRequest.getSenderId(), chatRequest.getRecipientId());
-        if (chatRoom.isEmpty()) {
-            ChatRoom newChatRoom = new ChatRoom();
-            newChatRoom.setSenderId(chatRequest.getSenderId());
-            newChatRoom.setRecipientId(chatRequest.getRecipientId());
-            chatMessage.setChat(newChatRoom);
-            chatRoomRepository.save(newChatRoom);
-        } else {
-            chatMessage.setChat(chatRoom.get());
-        }
-        chatMessage.setStatus("RECEIVED");
-        chatMessage.setTime(LocalDateTime.now());
-        chatMessage.setImage(chatMessage.isImage());
-        chatMessage.setSender(user);
-        chatMessage.setRecipient(userRepository.findById(chatRequest.getRecipientId()).get());
-        if (chatMessage.isImage()) {
-            byte[] decodedBytes = Base64.getDecoder().decode(chatRequest.getContent());
-            try {
-                chatMessageRepository.save(chatMessage);
-                ChatMessage savedChatMessage = chatMessageRepository.getLastImageForPathSetting().get();
-                BufferedImage image = ImageIO.read(new ByteArrayInputStream(decodedBytes));
-                BufferedImage editedImage = Scalr.resize(image, Scalr.Mode.FIT_EXACT,120,120);
-                String pathToImage = "navigator/images/id" + savedChatMessage.getId() + "image.png";
-                savedChatMessage.setContent(pathToImage);
-                chatMessageRepository.save(savedChatMessage);
-                Path path = Paths.get(pathToImage);
-                ImageIO.write(editedImage, "png", path.toFile());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            chatMessage.setContent(chatRequest.getContent());
-            chatMessageRepository.save(chatMessage);
-        }
-        chatMessageResponse.setMessage(chatMessage);
+        ChatMessageResponse response = new ChatMessageResponse();
+        response.setResult(false);
+        if (answerToOfferResponse != null) { // входящий ответ на предложение
+            Optional<User> recipient = userRepository.findById(answerToOfferResponse.getRecipientId());
+            if (recipient.isPresent()) {
+                ChatMessage answerToOffer = new ChatMessage();
+                Optional<ChatRoom> chatRoom;
+                if (chatRoomRepository.findBySenderIdAndRecipientId(user.getId(), recipient.get().getId()).isPresent()) {
+                    chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(user.getId(), recipient.get().getId());
+                } else if (chatRoomRepository.findBySenderIdAndRecipientId(recipient.get().getId(), user.getId()).isPresent()) {
+                    chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(recipient.get().getId(), user.getId());
+                } else {
+                    response.setResult(false);
 
-        return chatMessageResponse;
+                    return response;
+                }
+                answerToOffer.setChat(chatRoom.get());
+                answerToOffer.setTime(LocalDateTime.now());
+                answerToOffer.setSender(user);
+                answerToOffer.setRecipient(recipient.get());
+                answerToOffer.setStatus("RECEIVED");
+                if (answerToOfferResponse.getDecision() == 1) {
+                    answerToOffer.setMessageType("OFFER ACCEPTANCE");
+                    answerToOffer.setContent(checkAndGetMessageInSpecifiedLanguage(USER_ACCEPTED_OFFER,
+                            user.getEndonymInterfaceLanguage()));
+                } else {
+                    answerToOffer.setMessageType("OFFER REFUSING");
+                    answerToOffer.setContent(checkAndGetMessageInSpecifiedLanguage(USER_DECLINED_OFFER,
+                            user.getEndonymInterfaceLanguage()));
+                }
+                chatMessageRepository.save(answerToOffer);
+                response.setResult(true);
+            }
+        }
+        if (chatMessage != null) { // если это входящее сообщение
+            chatMessage.setStatus("RECEIVED");
+            chatMessageRepository.save(chatMessage);
+            response.setResult(true);
+        }
+        if (chatRequest != null) { // если это исходящее сообщение
+            Optional<User> recipient = userRepository.findById(chatRequest.getRecipientId());
+            if (recipient.isPresent()) {
+                ChatMessage newMessage = new ChatMessage();
+                Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(chatRequest.getSenderId(), chatRequest.getRecipientId());
+                if (chatRoom.isEmpty()) {
+                    ChatRoom newChatRoom = new ChatRoom();
+                    newChatRoom.setSenderId(chatRequest.getSenderId());
+                    newChatRoom.setRecipientId(chatRequest.getRecipientId());
+                    newMessage.setChat(newChatRoom);
+                    chatRoomRepository.save(newChatRoom);
+                } else {
+                    newMessage.setChat(chatRoom.get());
+                }
+                newMessage.setStatus("SENT");
+                newMessage.setTime(LocalDateTime.now());
+                newMessage.setSender(user);
+                newMessage.setRecipient(recipient.get());
+                if (chatRequest.isImage()) {
+                    byte[] decodedBytes = Base64.getDecoder().decode(chatRequest.getContent());
+                    try {
+                        newMessage.setMessageType("IMAGE");
+                        newMessage.setContent("image_path_placeholder");
+                        chatMessageRepository.save(newMessage);
+                        ChatMessage imageChatMessage = chatMessageRepository.findById().get();
+                        BufferedImage image = ImageIO.read(new ByteArrayInputStream(decodedBytes));
+                        BufferedImage editedImage = Scalr.resize(image, Scalr.Mode.FIT_EXACT,120,120);
+                        String pathToImage = "navigator/images/id" + imageChatMessage.getId() + "image.png";
+                        imageChatMessage.setContent(pathToImage);
+                        chatMessageRepository.save(imageChatMessage);
+                        response.setMessage(imageChatMessage);
+                        Path path = Paths.get(pathToImage);
+                        ImageIO.write(editedImage, "png", path.toFile());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    newMessage.setContent(chatRequest.getContent());
+                    chatMessageRepository.save(newMessage);
+                    response.setMessage(newMessage);
+                }
+                response.setResult(true);
+            }
+        }
+        if (vacancyRequest != null && employeeId != null) { // предложение от работодателя рабочему
+            Optional<User> employee = userRepository.findById(employeeId);
+            if (employee.isEmpty()) {
+                response.setResult(false);
+            } else {
+                Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(user.getId(), employeeId);
+                ChatMessage jobOffer = new ChatMessage();
+                if (chatRoom.isEmpty()) {
+                    ChatRoom newChatRoom = new ChatRoom();
+                    newChatRoom.setSenderId(user.getId());
+                    newChatRoom.setRecipientId(employeeId);
+                    chatRoomRepository.save(newChatRoom);
+                    jobOffer.setChat(newChatRoom);
+                } else {
+                    jobOffer.setChat(chatRoom.get());
+                }
+                jobOffer.setSender(user);
+                jobOffer.setRecipient(employee.get());
+                jobOffer.setTime(LocalDateTime.now());
+                jobOffer.setStatus("SENT");
+                jobOffer.setMessageType("OFFER");
+                StringBuilder sb = new StringBuilder();
+                sb.append(vacancyRequest.getProfessionName());
+                sb.append(" - ");
+                sb.append(vacancyRequest.getJobAddress());
+                sb.append(" - ");
+                sb.append(vacancyRequest.getStartTimestamp());
+                sb.append(" - ");
+                sb.append(vacancyRequest.getPaymentAndAdditionalInfo());
+                jobOffer.setContent(sb.toString());
+                Optional<Vacancy> vacancy = vacancyRepository.findById(vacancyRequest.getVacancyId());
+                if (vacancy.isPresent()) {
+                    jobOffer.setVacancy(vacancy.get());
+                } else {
+                    Vacancy privateVacancy = new Vacancy();
+                    privateVacancy.setEmployerRequests(user.getEmployerRequests());
+                    privateVacancy.setStartDateTime(LocalDateTime.now());
+                    privateVacancy.setPaymentAndAdditionalInfo(vacancyRequest.getPaymentAndAdditionalInfo());
+                    privateVacancy.setType("PRIVATE");
+                    privateVacancy.setProfession(professionNameRepository.findByName(vacancyRequest.getProfessionName())
+                            .get().getProfession());
+                    privateVacancy.setWaitingDateTime(vacancyRequest.getWaitingTimestamp());
+                    privateVacancy.setQuotasNumber(1);
+                    jobOffer.setVacancy(privateVacancy);
+                    privateVacancy.setReferencedChatMessage(jobOffer);
+                    vacancyRepository.save(privateVacancy);
+                }
+                chatMessageRepository.save(jobOffer);
+                response.setResult(true);
+            }
+        }
+        if (extendedUserInfoResponse != null) { // если работодателю приходит предложение от рабочего
+            Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(extendedUserInfoResponse.getId(), user.getId());
+            if (chatRoom.isPresent()) {
+                ChatMessage jobRequest = new ChatMessage();
+                jobRequest.setChat(chatRoom.get());
+                jobRequest.setSender(userRepository.findById(extendedUserInfoResponse.getId()).get());
+                jobRequest.setRecipient(user);
+                jobRequest.setTime(LocalDateTime.now());
+                jobRequest.setStatus("RECEIVED");
+                jobRequest.setMessageType("OFFER");
+                Vacancy vacancy = vacancyRepository.findById(extendedUserInfoResponse.getVacancyId()).get();
+                StringBuilder sb = new StringBuilder();
+                String professionField = null;
+                for (ProfessionName professionName : vacancy.getProfession().getProfessionNames()) {
+                    if (professionName.getLanguage().getLanguageEndonym().equals(DEFAULT_LANGUAGE)) {
+                        professionField = professionName.getProfessionName();
+                    }
+                    if (professionName.getLanguage().getLanguageEndonym().equals(user.getEndonymInterfaceLanguage())) {
+                        professionField = professionName.getProfessionName();
+                        break;
+                    }
+                }
+                sb.append(professionField);
+                sb.append(" - ");
+                sb.append(vacancy.getJobLocation().getJobAddress());
+                sb.append(" - ");
+                sb.append(vacancy.getStartDateTime());
+                sb.append(" - ");
+                sb.append(vacancy.getPaymentAndAdditionalInfo());
+                jobRequest.setContent(sb.toString());
+                jobRequest.setVacancy(vacancy);
+                chatMessageRepository.save(jobRequest);
+                response.setResult(true);
+            }
+        }
+        if (vacancyRequest != null) { // если рабочему приходит предложение от работодателя
+            Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(vacancyRequest.getEmployerId(), user.getId());
+            if (chatRoom.isPresent()) {
+                ChatMessage jobRequest = new ChatMessage();
+                jobRequest.setChat(chatRoom.get());
+                jobRequest.setSender(userRepository.findById(vacancyRequest.getEmployerId()).get());
+                jobRequest.setRecipient(user);
+                jobRequest.setTime(LocalDateTime.now());
+                jobRequest.setStatus("RECEIVED");
+                jobRequest.setMessageType("OFFER");
+                Vacancy vacancy = vacancyRepository.findById(vacancyRequest.getVacancyId()).get();
+                StringBuilder sb = new StringBuilder();
+                String professionField = null;
+                for (ProfessionName professionName : vacancy.getProfession().getProfessionNames()) {
+                    if (professionName.getLanguage().getLanguageEndonym().equals(DEFAULT_LANGUAGE)) {
+                        professionField = professionName.getProfessionName();
+                    }
+                    if (professionName.getLanguage().getLanguageEndonym().equals(user.getEndonymInterfaceLanguage())) {
+                        professionField = professionName.getProfessionName();
+                        break;
+                    }
+                }
+                sb.append(professionField);
+                sb.append(" - ");
+                sb.append(vacancy.getJobLocation().getJobAddress());
+                sb.append(" - ");
+                sb.append(vacancy.getStartDateTime());
+                sb.append(" - ");
+                sb.append(vacancy.getPaymentAndAdditionalInfo());
+                jobRequest.setContent(sb.toString());
+                jobRequest.setVacancy(vacancy);
+                chatMessageRepository.save(jobRequest);
+                response.setResult(true);
+            }
+        }
+        if (vacancyRequest != null && employerId != null) { // предложение от рабочего
+            Optional<User> employer = userRepository.findById(employerId);
+            if (employer.isEmpty()) {
+                response.setResult(false);
+            } else {
+                Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(user.getId(), employerId);
+                ChatMessage jobOffer = new ChatMessage();
+                if (chatRoom.isEmpty()) {
+                    ChatRoom newChatRoom = new ChatRoom();
+                    newChatRoom.setSenderId(user.getId());
+                    newChatRoom.setRecipientId(employeeId);
+                    chatRoomRepository.save(newChatRoom);
+                    jobOffer.setChat(newChatRoom);
+                } else {
+                    jobOffer.setChat(chatRoom.get());
+                }
+                jobOffer.setSender(user);
+                jobOffer.setRecipient(employer.get());
+                jobOffer.setTime(LocalDateTime.now());
+                jobOffer.setStatus("SENT");
+                jobOffer.setMessageType("OFFER");
+                StringBuilder sb = new StringBuilder();
+                sb.append(vacancyRequest.getProfessionName());
+                sb.append(" - ");
+                sb.append(vacancyRequest.getJobAddress());
+                sb.append(" - ");
+                sb.append(vacancyRequest.getStartTimestamp());
+                sb.append(" - ");
+                sb.append(vacancyRequest.getPaymentAndAdditionalInfo());
+                jobOffer.setContent(sb.toString());
+                Optional<Vacancy> vacancy = vacancyRepository.findById(vacancyRequest.getVacancyId());
+                if (vacancy.isPresent()) {
+                    jobOffer.setVacancy(vacancy.get());
+                }
+                chatMessageRepository.save(jobOffer);
+                response.setResult(true);
+            }
+        }
+
+        return response;
     }
 
     public ChatMessageResponse countNewMessages(long senderId, long recipientId) {

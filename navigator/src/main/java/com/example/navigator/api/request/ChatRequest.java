@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 public class ChatRequest {
 
-    @JsonProperty("employee_id")
-    private Long employeeId;
-    @JsonProperty("employer_id")
-    private Long employerId;
+    @JsonProperty("sender_id")
+    private Long senderId;
+    @JsonProperty("recipient_id")
+    private Long recipientId;
     @JsonProperty("content")
     private String content;
     @JsonProperty("is_image")
