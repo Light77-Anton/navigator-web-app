@@ -1,11 +1,18 @@
 package com.example.navigator.service;
 import com.example.navigator.api.request.*;
 import com.example.navigator.api.response.*;
+import com.example.navigator.dto.TimerDTO;
 import com.example.navigator.model.*;
 import com.example.navigator.model.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +38,7 @@ public class SystemService {
     @Autowired
     private LocationRepository locationRepository;
     @Autowired
-    private JobRepository jobRepository;
+    private VacancyRepository vacancyRepository;
     @Autowired
     private InfoAboutVacancyFromEmployerRepository infoAboutVacancyFromEmployerRepository;
 
@@ -43,6 +50,29 @@ public class SystemService {
     private final String PROFESSION_ALREADY_EXISTS = "PROFESSION_ALREADY_EXISTS";
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
+
+    public TimersListResponse getTimersList() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        TimersListResponse timersListResponse = new TimersListResponse();
+        List<TimerDTO> dtoList = new ArrayList<>();
+        TimerDTO timerDTO;
+        for (Vacancy vacancy : user.getEmployerRequests().getVacancies()) {
+            for (EmployeeData employeeData : vacancy.getHiredEmployees()) {
+                timerDTO = new TimerDTO();
+                timerDTO.setId(vacancy.getId());
+                timerDTO.setName(employeeData.getEmployee().getName());
+                timerDTO.setAddress(vacancy.getJobLocation().getJobAddress());
+                timerDTO.setProfession(getProfessionNameByIdAndLanguage(vacancy.getProfession().getId()).getString());
+                timerDTO.setContactedPersonId(employeeData.getId());
+                timerDTO.setMillisInFuture(ZonedDateTime.of(vacancy.getStartDateTime(), ZoneId.systemDefault()).toInstant().toEpochMilli());
+                dtoList.add(timerDTO);
+            }
+        }
+        timersListResponse.setList(dtoList);
+
+        return timersListResponse;
+    }
 
     public StringResponse getAdditionalInfoAboutVacancyInSpecifiedLanguage(ProfessionToUserRequest professionToUserRequest) {
         StringResponse stringResponse = new StringResponse();
@@ -61,7 +91,7 @@ public class SystemService {
         return null;
     }
 
-    public StringResponse getProfessionNameByIdAndLanguage(ProfessionToUserRequest professionToUserRequest) {
+    public StringResponse getProfessionNameByIdAndLanguage(long professionId) {
         StringResponse stringResponse = new StringResponse();
         long professionId = professionToUserRequest.getId();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -347,7 +347,14 @@ public class GeneralController {
 
     @GetMapping("user/timers/list/get")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<TimersListResponse> getTimersList () {
+    public ResponseEntity<TimersListResponse> getTimersList() {
+
+        return ResponseEntity.ok(systemService.getTimersList());
+    }
+
+    @GetMapping("language/get/by/name")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<IdResponse> getLanguageIdByName(String name) {
 
         return ResponseEntity.ok();
     }

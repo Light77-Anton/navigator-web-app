@@ -14,7 +14,14 @@ public class Language {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private Long id;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "languages_to_users",
+            joinColumns = {@JoinColumn(name = "language_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id")})
+    private List<User> users;
 
     @Column(name = "language_endonym", nullable = false)
     private String languageEndonym;
@@ -33,12 +40,6 @@ public class Language {
 
     @OneToMany(mappedBy = "additionalLanguage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<LastRequest> additionalLanguagesOfLastRequests;
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "languages_to_users",
-            joinColumns = {@JoinColumn(name = "language_id")},
-            inverseJoinColumns = {@JoinColumn(name = "user_id")})
-    private List<User> users;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "languages_to_last_request",

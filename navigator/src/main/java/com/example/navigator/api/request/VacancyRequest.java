@@ -14,6 +14,8 @@ public class VacancyRequest {
 
     @JsonProperty("vacancy_id")
     private Long vacancyId;
+    @JsonProperty("profession_id")
+    private Long professionId;
     @JsonProperty("profession_name")
     private String professionName;
     @JsonProperty("quotas_number")

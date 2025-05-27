@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 public class SearchRequest {
 
-    @JsonProperty("profession")
-    private String professionName;
-    @JsonProperty("additional_languages")
-    private String[] additionalLanguages;
+    @JsonProperty("profession_id")
+    private long professionId;
+    @JsonProperty("additional_language_id")
+    private long additionalLanguageId;
     @JsonProperty("limit")
     private int limit;
     @JsonProperty("is_auto")

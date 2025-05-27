@@ -24,8 +24,6 @@ public class SearchService {
     @Autowired
     private VacancyRepository vacancyRepository;
     @Autowired
-    private JobRepository jobRepository;
-    @Autowired
     private EmployerRequestsRepository employerRequestsRepository;
     @Autowired
     private EmployeeDataRepository employeeDataRepository;
@@ -68,6 +66,8 @@ public class SearchService {
     private final String OFFER_IS_NOT_EXIST = "OFFER_IS_NOT_EXIST";
     private final String USER_IS_TEMPORARILY_BUSY = "USER_IS_TEMPORARILY_BUSY";
     private final String SUCH_VACANCIES_ARE_NOT_EXIST = "SUCH_VACANCIES_ARE_NOT_EXIST";
+    private final String TOO_LONG_TEMPLATE_NAME = "TOO_LONG_TEMPLATE_NAME";
+    private final String QUOTAS_NUMBER_ERROR = "QUOTAS_NUMBER_ERROR";
 
     public DistanceResponse calculateDistance(LocationsRequest locationsRequest) {
         DistanceResponse distanceResponse = new DistanceResponse();
@@ -185,7 +185,6 @@ public class SearchService {
         UserLocation employeesLocation = user.getUserLocation();
         Pageable page = PageRequest.of(0, limit);
         List<Vacancy> vacanciesList;
-
         if (sortType.equals("name")) {
             vacanciesList = excludeSpecifiedEmployersAndGetList(
                     vacancyRepository.findAllByProfessionSortedByName(professionName.getProfessionName(), page),
@@ -227,13 +226,65 @@ public class SearchService {
             searchResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return searchResponse;
         }
-        ProfessionName professionName = professionNameRepository.findByName(searchRequest.getProfessionName()).get();
+        Optional<ProfessionName> professionName = professionNameRepository.findByName(searchRequest.getProfessionName());
+        if (professionName.isEmpty()) {
+            searchResponse.setError(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, user.getEndonymInterfaceLanguage()));
+            return searchResponse;
+        }
         boolean isAuto = searchRequest.isAuto();
         boolean areLanguagesMatch = searchRequest.isAreLanguagesMatched();
         double radius = searchRequest.getInRadiusOf();
+        String additionalLanguage = searchRequest.getAdditionalLanguage();
         UserLocation employersLocation = user.getUserLocation();
         Pageable page = PageRequest.of(0, limit);
         List<User> employeeList;
+        //___________________________________________________
+        if (searchRequest.isShowTemporarilyInactiveEmployees()) {
+            if (additionalLanguage != null) {
+                if (sortType.equals("name")) {
+
+                } else if (sortType.equals("rating")) {
+
+                } else if (sortType.equals("location")) {
+
+                } else {
+
+                }
+            } else {
+                if (sortType.equals("name")) {
+
+                } else if (sortType.equals("rating")) {
+
+                } else if (sortType.equals("location")) {
+
+                } else {
+
+                }
+            }
+        } else {
+            if (additionalLanguage != null) {
+                if (sortType.equals("name")) {
+
+                } else if (sortType.equals("rating")) {
+
+                } else if (sortType.equals("location")) {
+
+                } else {
+
+                }
+            } else {
+                if (sortType.equals("name")) {
+
+                } else if (sortType.equals("rating")) {
+
+                } else if (sortType.equals("location")) {
+
+                } else {
+
+                }
+            }
+        }
+        //______________________________________________________
         if (isAuto) {
             if (sortType.equals("name")) {
                 employeeList = excludeSpecifiedEmployeesAndGetList(
@@ -354,19 +405,19 @@ public class SearchService {
         return searchResponse;
     }
 
-    public ResultErrorsResponse deleteVacancyById(StringRequest stringRequest) {
+    public ResultErrorsResponse deleteVacancyById(long id) {
         ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
-        vacancyRepository.deleteById(Long.parseLong(stringRequest.getString()));
+        vacancyRepository.deleteById(id);
         resultErrorsResponse.setResult(true);
 
         return resultErrorsResponse;
     }
 
-    public VacancyInfoResponse getVacancyById(StringRequest stringRequest) {
+    public VacancyInfoResponse getVacancyById(long id) {
         VacancyInfoResponse vacancyInfoResponse = new VacancyInfoResponse();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
-        Vacancy vacancy = vacancyRepository.findById(Long.parseLong(stringRequest.getString())).get();
+        Vacancy vacancy = vacancyRepository.findById(id).get();
         vacancyInfoResponse.setJobAddress(vacancy.getJobLocation().getJobAddress());
         vacancyInfoResponse.setPaymentAndAdditionalInfo(vacancy.getPaymentAndAdditionalInfo());
         vacancyInfoResponse.setLocalDateTime(vacancy.getStartDateTime());
@@ -381,25 +432,36 @@ public class SearchService {
         List<String> errors = new ArrayList<>();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User employer = userRepository.findByEmail(username).get();
-        Long professionId = vacancyRequest.getProfessionId();
+        Optional<Profession> profession = professionRepository.findById(vacancyRequest.getProfessionId());
+        int quotasNumber = vacancyRequest.getQuotasNumber();
+        String templateName = vacancyRequest.getTemplateName();
+        boolean isSaveTemplate = vacancyRequest.isSaveTemplate();
+        boolean isNecessaryToCloseAllQuotas = vacancyRequest.isRequiredToCloseAllQuotas();
         String jobAddress = vacancyRequest.getJobAddress();
         Double latitude = vacancyRequest.getLatitude();
         Double longitude = vacancyRequest.getLongitude();
         String info = vacancyRequest.getPaymentAndAdditionalInfo();
-        Long timestamp = vacancyRequest.getTimestamp();
-        if (professionId == null) {
+        LocalDateTime waitingDateTime = vacancyRequest.getWaitingTimestamp();
+        LocalDateTime startDateTime = vacancyRequest.getStartTimestamp();
+        if (profession.isEmpty()) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, employer.getEndonymInterfaceLanguage()));
         }
         if (jobAddress == null || jobAddress.length() > 50 || latitude == null || longitude == null) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(INCORRECT_JOB_ADDRESS, employer.getEndonymInterfaceLanguage()));
         }
         if (info != null) {
-            if (info.length() > 50) {
+            if (info.length() > 200) {
                 errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_MANY_ADDITIONAL_INFO, employer.getEndonymInterfaceLanguage()));
             }
         }
-        if (timestamp == null) {
+        if (waitingDateTime == null || startDateTime == null) {
             errors.add(checkAndGetMessageInSpecifiedLanguage(SPECIFICATION_DATE_REQUIREMENT, employer.getEndonymInterfaceLanguage()));
+        }
+        if (templateName.length() > 20) {
+            errors.add(checkAndGetMessageInSpecifiedLanguage(TOO_LONG_TEMPLATE_NAME, employer.getEndonymInterfaceLanguage()));
+        }
+        if (quotasNumber < 1) {
+            errors.add(checkAndGetMessageInSpecifiedLanguage(QUOTAS_NUMBER_ERROR, employer.getEndonymInterfaceLanguage()));
         }
         if (!errors.isEmpty()) {
             resultErrorsResponse.setErrors(errors);
@@ -411,7 +473,7 @@ public class SearchService {
             employerRequestsRepository.save(employerRequests);
         }
         Vacancy vacancy = new Vacancy();
-        vacancy.setProfession(professionRepository.findById(professionId).get());
+        vacancy.setProfession(profession.get());
         JobLocation jobLocation = new JobLocation();
         jobLocation.setVacancy(vacancy);
         jobLocation.setJobAddress(vacancyRequest.getJobAddress());
@@ -420,8 +482,29 @@ public class SearchService {
         vacancy.setJobLocation(jobLocation);
         vacancy.setPaymentAndAdditionalInfo(info);
         vacancy.setEmployerRequests(employer.getEmployerRequests());
-        vacancy.setStartDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), TimeZone.getDefault().toZoneId()));
+        vacancy.setStartDateTime(startDateTime);
+        vacancy.setWaitingDateTime(waitingDateTime);
+        vacancy.setType("PUBLIC");
+        vacancy.setQuotasNumber(quotasNumber);
+        vacancy.setNecessaryToCloseAllQuotas(isNecessaryToCloseAllQuotas);
         vacancyRepository.save(vacancy);
+        if (isSaveTemplate) {
+            Vacancy template = new Vacancy();
+            template.setProfession(profession.get());
+            jobLocation.setVacancy(template);
+            jobLocation.setJobAddress(vacancyRequest.getJobAddress());
+            jobLocation.setLatitude(latitude);
+            jobLocation.setLongitude(longitude);
+            template.setJobLocation(jobLocation);
+            template.setPaymentAndAdditionalInfo(info);
+            template.setEmployerRequests(employer.getEmployerRequests());
+            template.setStartDateTime(null);
+            template.setWaitingDateTime(null);
+            template.setType("TEMPLATE");
+            template.setQuotasNumber(quotasNumber);
+            template.setNecessaryToCloseAllQuotas(isNecessaryToCloseAllQuotas);
+            vacancyRepository.save(template);
+        }
         resultErrorsResponse.setResult(true);
 
         return resultErrorsResponse;

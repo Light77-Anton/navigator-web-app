@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "user_locations")
+@Table(name = "users_locations")
 public class UserLocation {
 
     @Id

@@ -20,14 +20,14 @@ public class User {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "social_networks_links") // посмотреть как давать ссылки в PSQL
-    private String socialNetworksLinks;
-
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "language_to_user",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "language_id")})
     private List<Language> communicationLanguages;
+
+    @Column(name = "social_networks_links") // посмотреть как давать ссылки в PSQL
+    private String socialNetworksLinks;
 
     @Column(name = "interface_language", nullable = false) // не ссылается на сам Language т.к. обычно хватает только самоназвания
     private String endonymInterfaceLanguage;

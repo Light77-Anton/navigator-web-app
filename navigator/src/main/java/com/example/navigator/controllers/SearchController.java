@@ -2,7 +2,6 @@ package com.example.navigator.controllers;
 import com.example.navigator.api.request.VacancyRequest;
 import com.example.navigator.api.request.LocationsRequest;
 import com.example.navigator.api.request.SearchRequest;
-import com.example.navigator.api.request.StringRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.service.ProfileService;
 import com.example.navigator.service.SearchService;
@@ -46,14 +45,14 @@ public class SearchController {
 
     @GetMapping("vacancy/{id}/get")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<VacancyInfoResponse> getVacancyById(@PathVariable String id) {
+    public ResponseEntity<VacancyInfoResponse> getVacancyById(@PathVariable("id") long id) {
 
-        return ResponseEntity.ok(searchService.getVacancyById(stringRequest));
+        return ResponseEntity.ok(searchService.getVacancyById(id));
     }
 
     @DeleteMapping("vacancy/{id}/delete")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ResultErrorsResponse> deleteVacancyById(@PathVariable String id) {
+    public ResponseEntity<ResultErrorsResponse> deleteVacancyById(@PathVariable("id") long id) {
 
         return ResponseEntity.ok(searchService.deleteVacancyById(id));
     }
