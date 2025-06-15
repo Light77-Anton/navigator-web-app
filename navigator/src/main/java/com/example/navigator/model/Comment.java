@@ -45,8 +45,12 @@ public class Comment {
     @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
 
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "vote_id", nullable = false)
-    private Vote vote;
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Vote> votes;
+
+    @Column(name = "average_vote", nullable = false)
+    private byte averageVote;
+
+    @Column(name = "is_viewed_by_recipient", nullable = false)
+    private boolean isViewedByRecipient;
 }

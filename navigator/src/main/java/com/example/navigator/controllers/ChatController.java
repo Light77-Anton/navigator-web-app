@@ -159,4 +159,11 @@ public class ChatController {
 
         return ResponseEntity.ok(chatMessageService.openChat(chatRequest));
     }
+
+    @GetMapping("comment/{id}/get")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<CommentsListResponse> getCommentById(@PathVariable("id") long id) {
+
+        return ResponseEntity.ok(chatMessageService.getCommentById(id));
+    }
 }

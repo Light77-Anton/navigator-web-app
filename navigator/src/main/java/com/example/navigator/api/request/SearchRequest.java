@@ -14,7 +14,7 @@ public class SearchRequest {
     @JsonProperty("profession_id")
     private long professionId;
     @JsonProperty("additional_language_id")
-    private long additionalLanguageId;
+    private Long additionalLanguageId;
     @JsonProperty("limit")
     private int limit;
     @JsonProperty("is_auto")

@@ -7,5 +7,8 @@ import org.springframework.stereotype.Component;
 public class VoteResponse {
 
     private byte value;
+    private int averageValue;
     private long userId;
+    private boolean isResult;
+    private String error;
 }

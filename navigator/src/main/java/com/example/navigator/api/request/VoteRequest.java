@@ -15,4 +15,6 @@ public class VoteRequest {
     private byte value;
     @JsonProperty("user_id")
     private Long userId;
+    @JsonProperty("comment_content")
+    private String commentContent;
 }

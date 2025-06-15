@@ -12,7 +12,7 @@ public class ExtendedUserInfoResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private long vacancyId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String status;
+    private byte status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private byte rating;
     @JsonInclude(JsonInclude.Include.NON_NULL)

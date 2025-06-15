@@ -16,7 +16,7 @@ public class Vote {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "value", nullable = false) // от 1 до 10
     private byte value;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -27,7 +27,7 @@ public class Vote {
     @JoinColumn(name = "recipient_id", nullable = false)
     private User recipient;
 
-    @OneToOne(mappedBy = "vote", cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn
-    private Comment initialComment;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id", nullable = false)
+    private Comment comment;
 }

@@ -13,6 +13,8 @@ public class CommentRequest {
 
     @JsonProperty("user_id")
     private long userId;
+    @JsonProperty("replied_comment_id")
+    private long repliedCommentId;
     @JsonProperty("content")
     private String content;
 }

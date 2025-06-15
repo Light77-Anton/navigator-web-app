@@ -40,6 +40,8 @@ public class ChatMessageService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
     private EmployeeToEmployerRepository employeeToEmployerRepository;
     @Autowired
     private VacancyRepository vacancyRepository;
@@ -62,6 +64,13 @@ public class ChatMessageService {
     private final String NO_MORE_QUOTAS = "NO_MORE_QUOTAS";
     private final String USER_DECLINED_OFFER = "USER_DECLINED_OFFER";
     private final String USER_ACCEPTED_OFFER = "USER_ACCEPTED_OFFER";
+
+    public CommentsListResponse getCommentById(long id) {
+        CommentsListResponse commentsListResponse = new CommentsListResponse();
+        commentsListResponse.setList(List.of(commentRepository.findById(id).get()));
+
+        return commentsListResponse;
+    }
 
     /*
 

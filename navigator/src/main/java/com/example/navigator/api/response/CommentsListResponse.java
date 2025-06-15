@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class CommentsListResponse {
 
-    List<Comment> list;
+    private List<Comment> list;
 }

@@ -55,7 +55,7 @@ public class EmployeeData {
     private User employee;
 
     @Column(name = "info_from_employee")
-    private List<String> infoFromEmployee;
+    private String infoFromEmployee;
 
     @Column(name = "default_offer_refusing_time_millis", nullable = false)
     private long defaultOfferRefusingTimeMillis;

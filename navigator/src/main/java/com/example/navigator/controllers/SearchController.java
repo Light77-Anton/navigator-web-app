@@ -66,16 +66,16 @@ public class SearchController {
 
     @GetMapping("employee/{id}/info")
     @PreAuthorize("hasAuthority('user:hire')")
-    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@PathVariable String id) {
+    public ResponseEntity<ExtendedUserInfoResponse> getEmployeeInfo(@PathVariable("id") long id) {
 
-        return ResponseEntity.ok(profileService.getEmployeeInfo(stringRequest));
+        return ResponseEntity.ok(profileService.getEmployeeInfo(id));
     }
 
     @GetMapping("employer/{id}/info")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ExtendedUserInfoResponse> getEmployerInfo(@PathVariable String id) {
+    public ResponseEntity<ExtendedUserInfoResponse> getEmployerInfo(@PathVariable long id) {
 
-        return ResponseEntity.ok(profileService.getEmployerInfo(stringRequest));
+        return ResponseEntity.ok(profileService.getEmployerInfo(id));
     }
 
     @GetMapping("saved/requests/get")

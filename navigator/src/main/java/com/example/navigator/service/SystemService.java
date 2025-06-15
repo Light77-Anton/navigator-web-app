@@ -9,7 +9,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,6 +39,8 @@ public class SystemService {
     @Autowired
     private VacancyRepository vacancyRepository;
     @Autowired
+    private RequestForCompanySettingRepository requestForCompanySettingRepository;
+    @Autowired
     private InfoAboutVacancyFromEmployerRepository infoAboutVacancyFromEmployerRepository;
 
     private final String DEFAULT_LANGUAGE = "English";
@@ -51,20 +52,60 @@ public class SystemService {
     private final String APP_DOES_NOT_HAVE_LANGUAGE = "APP_DOES_NOT_HAVE_LANGUAGE";
     private final String PROFESSION_NOT_FOUND = "PROFESSION_NOT_FOUND";
 
+    public ResultErrorsResponse makeRequestForCompanySetting(StringRequest stringRequest) {
+        ResultErrorsResponse resultErrorsResponse = new ResultErrorsResponse();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(username).get();
+        RequestForCompanySetting requestForCompanySetting = new RequestForCompanySetting();
+        requestForCompanySetting.setEmployerRequests(user.getEmployerRequests());
+        requestForCompanySetting.setRequestInfo(stringRequest.getString());
+        requestForCompanySettingRepository.save(requestForCompanySetting);
+        resultErrorsResponse.setResult(true);
+
+        return resultErrorsResponse;
+    }
+
+    public IdResponse getLanguageIdByName(String name) {
+        IdResponse idResponse = new IdResponse();
+        Optional<Language> language = languageRepository.findByName(name);
+        if (language.isEmpty()) {
+
+            return idResponse;
+        }
+        idResponse.setResult(true);
+        idResponse.setId(language.get().getId());
+
+        return idResponse;
+    }
+
     public TimersListResponse getTimersList() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
         TimersListResponse timersListResponse = new TimersListResponse();
         List<TimerDTO> dtoList = new ArrayList<>();
         TimerDTO timerDTO;
-        for (Vacancy vacancy : user.getEmployerRequests().getVacancies()) {
-            for (EmployeeData employeeData : vacancy.getHiredEmployees()) {
+        if (user.getRole() == Role.EMPLOYER) {
+            for (Vacancy vacancy : user.getEmployerRequests().getVacancies()) {
+                for (EmployeeData employeeData : vacancy.getHiredEmployees()) {
+                    timerDTO = new TimerDTO();
+                    timerDTO.setId(vacancy.getId());
+                    timerDTO.setName(employeeData.getEmployee().getName());
+                    timerDTO.setAddress(vacancy.getJobLocation().getJobAddress());
+                    timerDTO.setProfession(getProfessionNameByIdAndLanguage(vacancy.getProfession().getId()).getString());
+                    timerDTO.setContactedPersonId(employeeData.getId());
+                    timerDTO.setMillisInFuture(ZonedDateTime.of(vacancy.getStartDateTime(), ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    dtoList.add(timerDTO);
+                }
+            }
+        } else {
+            EmployeeData data = user.getEmployeeData();
+            for (Vacancy vacancy : data.getAcceptedVacancies()) {
                 timerDTO = new TimerDTO();
                 timerDTO.setId(vacancy.getId());
-                timerDTO.setName(employeeData.getEmployee().getName());
+                timerDTO.setName(vacancy.getEmployerRequests().getEmployer().getName());
                 timerDTO.setAddress(vacancy.getJobLocation().getJobAddress());
                 timerDTO.setProfession(getProfessionNameByIdAndLanguage(vacancy.getProfession().getId()).getString());
-                timerDTO.setContactedPersonId(employeeData.getId());
+                timerDTO.setContactedPersonId(vacancy.getEmployerRequests().getId());
                 timerDTO.setMillisInFuture(ZonedDateTime.of(vacancy.getStartDateTime(), ZoneId.systemDefault()).toInstant().toEpochMilli());
                 dtoList.add(timerDTO);
             }
@@ -93,19 +134,23 @@ public class SystemService {
 
     public StringResponse getProfessionNameByIdAndLanguage(long professionId) {
         StringResponse stringResponse = new StringResponse();
-        long professionId = professionToUserRequest.getId();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
         Optional<ProfessionName> professionName = professionNameRepository.findByProfessionIdAndLanguage(professionId,
                 user.getEndonymInterfaceLanguage());
-        stringResponse.setString(professionName.get().getProfessionName());
+        if (professionName.isPresent()) {
+            stringResponse.setString(professionName.get().getProfessionName());
+        } else {
+            stringResponse.setString(professionNameRepository.findByProfessionIdAndLanguage(professionId,
+                    DEFAULT_LANGUAGE).get().getProfessionName());
+        }
 
         return stringResponse;
     }
 
-    public IdResponse getProfessionIdByName(StringRequest stringRequest) {
+    public IdResponse getProfessionIdByName(String name) {
         IdResponse idResponse = new IdResponse();
-        Optional<ProfessionName> professionName = professionNameRepository.findByName(stringRequest.getString());
+        Optional<ProfessionName> professionName = professionNameRepository.findByName(name);
         if (professionName.isEmpty()) {
             return idResponse;
         }
@@ -151,14 +196,13 @@ public class SystemService {
         return textListResponse;
     }
 
-    public TextListResponse getProfessionsNamesInSpecifiedLanguage() {
+    public ProfessionNamesListResponse getProfessionsNamesInSpecifiedLanguage() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(username).get();
-        TextListResponse textListResponse = new TextListResponse();
-        textListResponse.setList(professionNameRepository.findAllBySpecifiedLanguage(user.getEndonymInterfaceLanguage())
-                .stream().map(ProfessionName::getProfessionName).collect(Collectors.toList()));
+        ProfessionNamesListResponse professionNamesListResponse = new ProfessionNamesListResponse();
+        professionNamesListResponse.setList(new ArrayList<>(professionNameRepository.findAllBySpecifiedLanguage(user.getEndonymInterfaceLanguage())));
 
-        return textListResponse;
+        return professionNamesListResponse;
     }
 
     public HashMap<String, String> checkAndGetTextListInSpecifiedLanguage(TextListInSpecifiedLanguageRequest textList) {
@@ -298,6 +342,7 @@ public class SystemService {
                 .findByCodeNameAndLanguage(codeName, interfaceLanguage);
         if (inProgramMessage.isPresent()) {
             stringResponse.setString(inProgramMessage.get().getMessage());
+
             return stringResponse;
         }
         stringResponse.setString(inProgramMessageRepository.findByCodeNameAndLanguage(codeName, DEFAULT_LANGUAGE).get()

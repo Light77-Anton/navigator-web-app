@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class UserInfoResponse {
 
-    private long id;
+    private Long id;
     private String socialNetworksLinks;
     private List<String> communicationLanguages;
     private String endonymInterfaceLanguage;
@@ -19,7 +19,7 @@ public class UserInfoResponse {
     private String name;
     private String email;
     private String phone;
-    private String lastRequest;
+    private LastRequest lastRequest;
     private int limitOfTheSearch;
     private boolean isMultivacancyAllowed;
     private boolean showTemporarilyInactiveEmployees;

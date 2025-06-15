@@ -178,33 +178,56 @@ public class SearchService {
             searchResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return searchResponse;
         }
-        ProfessionName professionName = professionNameRepository.findByName(searchRequest.getProfessionName()).get();
-        boolean isAuto = searchRequest.isAuto();
-        boolean areLanguagesMatch = searchRequest.isAreLanguagesMatched();
-        double radius = searchRequest.getInRadiusOf();
-        UserLocation employeesLocation = user.getUserLocation();
+        Optional<ProfessionName> professionName = professionNameRepository.findById(searchRequest.getProfessionId());
+        long professionId = professionName.get().getProfession().getId();
         Pageable page = PageRequest.of(0, limit);
         List<Vacancy> vacanciesList;
-        if (sortType.equals("name")) {
-            vacanciesList = excludeSpecifiedEmployersAndGetList(
-                    vacancyRepository.findAllByProfessionSortedByName(professionName.getProfessionName(), page),
-                    employeesLocation.getLatitude(), employeesLocation.getLongitude(), radius, user, areLanguagesMatch);
-        } else if (sortType.equals("rating")) {
-            vacanciesList = excludeSpecifiedEmployersAndGetList(
-                    vacancyRepository.findAllByProfessionSortedByRating(professionName.getProfessionName(), page),
-                    employeesLocation.getLatitude(), employeesLocation.getLongitude(), radius, user, areLanguagesMatch);
-        } else if (sortType.equals("location")) {
-            vacanciesList = excludeSpecifiedEmployersAndGetList(
-                    vacancyRepository.findByProfession(professionName.getProfessionName(), page),
-                    employeesLocation.getLatitude(), employeesLocation.getLongitude(), radius, user, areLanguagesMatch);
-            vacanciesList = new ArrayList<>(getVacanciesSortedByLocation(searchRequest, vacanciesList,
-                    employeesLocation.getLatitude(), employeesLocation.getLongitude()).values());
+        if (searchRequest.isAreLanguagesMatched()) {
+            if (sortType.equals("name")) {
+                vacanciesList = vacancyRepository.findAllVacanciesWithLanguagesMatchingSortedByName(
+                professionId, user.getId(),
+                user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            } else if (sortType.equals("rating")) {
+                vacanciesList = vacancyRepository.findAllVacanciesWithLanguagesMatchingSortedByRating(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            }
+            else if (sortType.equals("location")) {
+                vacanciesList = vacancyRepository.findAllVacanciesWithLanguagesMatchingSortedByLocation(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            } else {
+                vacanciesList = vacancyRepository.findAllVacanciesWithLanguagesMatching(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            }
         } else {
-            vacanciesList = excludeSpecifiedEmployersAndGetList(
-                    vacancyRepository.findByProfession(professionName.getProfessionName(), page),
-                    employeesLocation.getLatitude(), employeesLocation.getLongitude(), radius, user, areLanguagesMatch);
+            if (sortType.equals("name")) {
+                vacanciesList = vacancyRepository.findAllVacanciesSortedByName(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            } else if (sortType.equals("rating")) {
+                vacanciesList = vacancyRepository.findAllVacanciesSortedByRating(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            } else if (sortType.equals("location")) {
+                vacanciesList = vacancyRepository.findAllVacanciesSortedByLocation(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            } else {
+                vacanciesList = vacancyRepository.findAllVacancies(
+                        professionId, user.getId(),
+                        user.getUserLocation().getLatitude(), user.getUserLocation().getLongitude(),
+                        searchRequest.getInRadiusOf(), page);
+            }
         }
-
         if (vacanciesList.isEmpty()) {
             searchResponse.setError(checkAndGetMessageInSpecifiedLanguage
                     (EMPLOYEES_DOES_NOT_EXIST, user.getEndonymInterfaceLanguage()));
@@ -226,104 +249,403 @@ public class SearchService {
             searchResponse.setError(checkAndGetMessageInSpecifiedLanguage(INCORRECT_LIMIT, user.getEndonymInterfaceLanguage()));
             return searchResponse;
         }
-        Optional<ProfessionName> professionName = professionNameRepository.findByName(searchRequest.getProfessionName());
+        Optional<ProfessionName> professionName = professionNameRepository.findById(searchRequest.getProfessionId());
         if (professionName.isEmpty()) {
             searchResponse.setError(checkAndGetMessageInSpecifiedLanguage(PROFESSION_NOT_FOUND, user.getEndonymInterfaceLanguage()));
             return searchResponse;
         }
-        boolean isAuto = searchRequest.isAuto();
-        boolean areLanguagesMatch = searchRequest.isAreLanguagesMatched();
-        double radius = searchRequest.getInRadiusOf();
-        String additionalLanguage = searchRequest.getAdditionalLanguage();
-        UserLocation employersLocation = user.getUserLocation();
         Pageable page = PageRequest.of(0, limit);
         List<User> employeeList;
-        //___________________________________________________
-        if (searchRequest.isShowTemporarilyInactiveEmployees()) {
-            if (additionalLanguage != null) {
-                if (sortType.equals("name")) {
-
-                } else if (sortType.equals("rating")) {
-
-                } else if (sortType.equals("location")) {
-
-                } else {
-
-                }
-            } else {
-                if (sortType.equals("name")) {
-
-                } else if (sortType.equals("rating")) {
-
-                } else if (sortType.equals("location")) {
-
-                } else {
-
-                }
-            }
-        } else {
-            if (additionalLanguage != null) {
-                if (sortType.equals("name")) {
-
-                } else if (sortType.equals("rating")) {
-
-                } else if (sortType.equals("location")) {
-
-                } else {
-
-                }
-            } else {
-                if (sortType.equals("name")) {
-
-                } else if (sortType.equals("rating")) {
-
-                } else if (sortType.equals("location")) {
-
-                } else {
-
-                }
-            }
-        }
-        //______________________________________________________
-        if (isAuto) {
+        boolean isTemporarilyInactive = searchRequest.isShowTemporarilyInactiveEmployees();
+        boolean areLanguagesMatched = searchRequest.isAreLanguagesMatched();
+        Long additionalLanguageId = searchRequest.getAdditionalLanguageId();
+        if (isTemporarilyInactive && additionalLanguageId != null && areLanguagesMatched) { // findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageAndIncludingTemporarilyInactive
             if (sortType.equals("name")) {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findAllByProfessionAndAutoSortedByName(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageAndIncludingTemporarilyInactiveSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             } else if (sortType.equals("rating")) {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findTheBestByProfessionAndAuto(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageAndIncludingTemporarilyInactiveSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             } else if (sortType.equals("location")) {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findAllByProfessionAndAuto(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
-                employeeList = new ArrayList<>(getEmployeesSortedByLocation(searchRequest, employeeList,
-                        employersLocation.getLatitude(), employersLocation.getLongitude()).values());
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageAndIncludingTemporarilyInactiveSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             } else {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findAllByProfessionAndAuto(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageAndIncludingTemporarilyInactive(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             }
-        } else {
+        } else if (isTemporarilyInactive && additionalLanguageId != null && !areLanguagesMatched) { // )  findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactive
             if (sortType.equals("name")) {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findAllByProfessionSortedByName(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactiveSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             } else if (sortType.equals("rating")) {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findTheBestByProfession(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactiveSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             } else if (sortType.equals("location")) {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findAllByProfession(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
-                employeeList = new ArrayList<>(getEmployeesSortedByLocation(searchRequest, employeeList,
-                        employersLocation.getLatitude(), employersLocation.getLongitude()).values());
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactiveSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             } else {
-                employeeList = excludeSpecifiedEmployeesAndGetList(
-                        userRepository.findAllByProfession(professionName.getProfession().getId(), page),
-                        employersLocation.getLatitude(), employersLocation.getLongitude(), radius, user, areLanguagesMatch);
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactive(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            }
+        } else if (isTemporarilyInactive && additionalLanguageId == null && areLanguagesMatched) { // findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactive
+            if (sortType.equals("name")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactiveSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("rating")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactiveSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("location")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactiveSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactive(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            }
+        } else if (!isTemporarilyInactive && additionalLanguageId != null && !areLanguagesMatched) { // findAllEmployeesAndAdditionalLanguage
+            if (sortType.equals("name")) {
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("rating")) {
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("location")) {
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguageSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else {
+                employeeList = userRepository.findAllEmployeesWithAdditionalLanguage(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            }
+        } else if (!isTemporarilyInactive && additionalLanguageId == null && areLanguagesMatched) { // findAllEmployeesWithLanguagesMatching
+            if (sortType.equals("name")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("rating")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("location")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatching(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            }
+        } else if (!isTemporarilyInactive && additionalLanguageId != null && areLanguagesMatched) { // findAllEmployeesWithLanguagesMatchingAndAdditionalLanguage
+            if (sortType.equals("name")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("rating")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("location")) {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguageSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else {
+                employeeList = userRepository.findAllEmployeesWithLanguagesMatchingAndAdditionalLanguage(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.getAdditionalLanguageId(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            }
+        } else if (isTemporarilyInactive && additionalLanguageId == null && !areLanguagesMatched) { // ) findAllEmployeesIncludingTemporarilyInactive
+            if (sortType.equals("name")) {
+                employeeList = userRepository.findAllEmployeesIncludingTemporarilyInactiveSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("rating")) {
+                employeeList = userRepository.findAllEmployeesIncludingTemporarilyInactiveSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("location")) {
+                employeeList = userRepository.findAllEmployeesIncludingTemporarilyInactiveSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else {
+                employeeList = userRepository.findAllEmployeesIncludingTemporarilyInactive(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            }
+        } else { // findAllEmployees
+            if (sortType.equals("name")) {
+                employeeList = userRepository.findAllEmployeesSortedByName(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("rating")) {
+                employeeList = userRepository.findAllEmployeesSortedByRating(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else if (sortType.equals("location")) {
+                employeeList = userRepository.findAllEmployeesSortedByLocation(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
+            } else {
+                employeeList = userRepository.findAllEmployees(
+                        searchRequest.getProfessionId(),
+                        user.getId(),
+                        user.getUserLocation().getLatitude(),
+                        user.getUserLocation().getLongitude(),
+                        searchRequest.isAuto(),
+                        searchRequest.isMultivacancyAllowed(),
+                        searchRequest.getInRadiusOf(),
+                        page
+                );
             }
         }
         if (employeeList.isEmpty()) {

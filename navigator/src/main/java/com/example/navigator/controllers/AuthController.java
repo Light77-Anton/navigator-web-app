@@ -1,10 +1,12 @@
 package com.example.navigator.controllers;
 import com.example.navigator.api.request.LoginRequest;
 import com.example.navigator.api.request.RegistrationRequest;
+import com.example.navigator.api.request.StringRequest;
 import com.example.navigator.api.response.*;
 import com.example.navigator.service.AuthService;
 import com.example.navigator.service.CaptchaService;
 import com.example.navigator.service.ProfileService;
+import com.example.navigator.service.SystemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,7 @@ public class AuthController {
     private AuthService authService;
     private CaptchaService captchaService;
     private ProfileService profileService;
+    private SystemService systemService;
 
     AuthController(AuthService authService, CaptchaService captchaService, ProfileService profileService) {
         this.authService = authService;
@@ -71,5 +74,12 @@ public class AuthController {
     public ResponseEntity<StringResponse> activateAccount(@PathVariable("id") Long userId) {
 
         return ResponseEntity.ok(profileService.activateAccount(userId));
+    }
+
+    @PostMapping("request/company/set")
+    @PreAuthorize("hasAuthority('user:hire')")
+    public ResponseEntity<ResultErrorsResponse> makeRequestForCompanySetting(@RequestBody StringRequest stringRequest) {
+
+        return ResponseEntity.ok(systemService.makeRequestForCompanySetting(stringRequest));
     }
 }

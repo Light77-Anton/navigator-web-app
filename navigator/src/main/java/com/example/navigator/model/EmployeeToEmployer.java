@@ -33,7 +33,4 @@ public class EmployeeToEmployer {
 
     @Column(name = "available_votes_count_from_employer", nullable = false)
     private int availableVotesCountFromEmployer;
-
-    @OneToMany(mappedBy = "employeeToEmployer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Vote> votes;
 }

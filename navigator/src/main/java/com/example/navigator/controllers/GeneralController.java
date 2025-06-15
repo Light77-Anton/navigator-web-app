@@ -30,7 +30,7 @@ public class GeneralController {
     @GetMapping("templates/get")
     public ResponseEntity<VacancyListResponse> getTemplatesList() {
 
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(profileService.getTemplatesList());
     }
 
     @GetMapping("system/message/get")
@@ -68,8 +68,8 @@ public class GeneralController {
         return ResponseEntity.ok(systemService.getProfessionsNamesInSpecifiedLanguage());
     }
 
-    @GetMapping("profession/get/by/name")
-    public ResponseEntity<IdResponse> getProfessionIdByName(@RequestBody String professionName) {
+    @GetMapping("profession/get/by/name/{profession}")
+    public ResponseEntity<IdResponse> getProfessionIdByName(@PathVariable String professionName) {
 
         return ResponseEntity.ok(systemService.getProfessionIdByName(professionName));
     }
@@ -106,12 +106,11 @@ public class GeneralController {
         return ResponseEntity.ok(profileService.postProfessionToUser(professionToUserRequest));
     }
 
-    @DeleteMapping("profession/to/user/delete")
+    @DeleteMapping("professions/to/user/clear")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> deleteProfessionToUser
-            (@RequestBody ProfessionToUserRequest professionToUserRequest) {
+    public ResponseEntity<ResultErrorsResponse> clearProfessionsToUser () {
 
-        return ResponseEntity.ok(profileService.deleteProfessionToUser(professionToUserRequest));
+        return ResponseEntity.ok(profileService.clearProfessionsToUser());
     }
 
     @GetMapping("system/text/get")
@@ -164,7 +163,6 @@ public class GeneralController {
         return ResponseEntity.ok(profileService.writeAvatar(avatar));
     }
 
-
     @PutMapping("profile")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
     public ResponseEntity<ResultErrorsResponse> profile(@RequestBody ProfileRequest profileRequest) {
@@ -215,7 +213,7 @@ public class GeneralController {
     }
 
     @PutMapping("location")
-    @PreAuthorize("hasAuthority('user:work')")
+    @PreAuthorize("hasAuthority('user:work') or hasAuthority('user:hire')")
     public ResponseEntity<ResultErrorsResponse> updateLocation(@RequestBody LocationRequest locationRequest) {
 
         return ResponseEntity.ok(systemService.updateLocation(locationRequest));
@@ -227,22 +225,15 @@ public class GeneralController {
         return ResponseEntity.ok(profileService.checkEmailAndGetCode(email));
     }
 
-    @PostMapping("password")
-    public ResponseEntity<ResultErrorsResponse> changePassword(@RequestBody PasswordRequest passwordRequest) {
+    @PostMapping("profile/password/change")
+    public ResponseEntity<ResultErrorsResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
 
-        return ResponseEntity.ok(profileService.checkAndChangePassword(passwordRequest));
+        return ResponseEntity.ok(profileService.checkAndChangePassword(changePasswordRequest));
     }
 
-    @PutMapping("user/like")
+    @PutMapping("vote")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<VoteResponse> like(@RequestBody VoteRequest voteRequest) {
-
-        return ResponseEntity.ok(profileService.vote(voteRequest));
-    }
-
-    @PutMapping("user/dislike")
-    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<VoteResponse> dislike(@RequestBody VoteRequest voteRequest) {
+    public ResponseEntity<VoteResponse> vote(@RequestBody VoteRequest voteRequest) {
 
         return ResponseEntity.ok(profileService.vote(voteRequest));
     }
@@ -254,11 +245,19 @@ public class GeneralController {
         return ResponseEntity.ok(profileService.comment(commentRequest));
     }
 
-    @GetMapping("get/{id}/comments")
+    @PostMapping("reply/{id}")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<CommentsListResponse> getCommentsListByUserId(@PathVariable long id) {
+    public ResponseEntity<ResultErrorsResponse> reply(@PathVariable("id") long id, @RequestBody CommentRequest commentRequest) {
 
-        return ResponseEntity.ok(profileService.getCommentsByUserId(id));
+        return ResponseEntity.ok(profileService.reply(id, commentRequest));
+    }
+
+    @GetMapping("get/{id}/comments/{sort}")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
+    public ResponseEntity<CommentsListResponse> getCommentsListByUserId(@PathVariable("id") long id,
+                                                                        @PathVariable("sort") Byte sort) {
+
+        return ResponseEntity.ok(profileService.getCommentsListByRecipientId(id, sort));
     }
 
     @PostMapping("user/{id}/favorite/{decision}")
@@ -277,9 +276,9 @@ public class GeneralController {
 
     @GetMapping("user/{id}/relationship/status")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
-    public ResponseEntity<RelationshipStatusResponse> getRelationshipStatus(@PathVariable long id) {
+    public ResponseEntity<RelationshipStatusResponse> getRelationshipStatus(@PathVariable("id") long id) {
 
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(profileService.getRelationshipStatus(id));
     }
 
     @GetMapping("user/sender/get")
@@ -318,7 +317,7 @@ public class GeneralController {
 
     @GetMapping("user/get")
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
-    public ResponseEntity<UserInfoResponse> getUser() {
+    public ResponseEntity<UserInfoResponse> getUserInfo() {
 
         return ResponseEntity.ok(profileService.getUserInfo());
     }
@@ -334,15 +333,14 @@ public class GeneralController {
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work') or hasAuthority('user:moderate')")
     public ResponseEntity<ResultErrorsResponse> changeWorkDisplay() {
 
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(profileService.changeWorkDisplay());
     }
 
     @PutMapping("user/employee/work/info/change")
     @PreAuthorize("hasAuthority('user:work')")
-    public ResponseEntity<ResultErrorsResponse> changeInfoFromEmployeeForEmployers
-            (@RequestBody EmployeeInfoForEmployersRequest employeeInfoForEmployersRequest) {
+    public ResponseEntity<ResultErrorsResponse> changeInfoFromEmployeeForEmployers(@RequestBody StringRequest stringRequest) {
 
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(profileService.changeInfoFromEmployeeForEmployers(stringRequest));
     }
 
     @GetMapping("user/timers/list/get")
@@ -356,6 +354,22 @@ public class GeneralController {
     @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
     public ResponseEntity<IdResponse> getLanguageIdByName(String name) {
 
-        return ResponseEntity.ok();
+        return ResponseEntity.ok(systemService.getLanguageIdByName(name));
+    }
+
+    @GetMapping("employee/{employeeId}/to/employer/{employerId}/votes/count/get")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<IdResponse> getAvailableVotesCount(@PathVariable("employeeId") long employeeId,
+                                         @PathVariable("employerId") long employerId) {
+
+        return ResponseEntity.ok(profileService.getAvailableVotesCount(employeeId, employerId));
+    }
+
+    @GetMapping("get/average/vote/from/sender/{senderId}/to/recipient/{recipientId}")
+    @PreAuthorize("hasAuthority('user:hire') or hasAuthority('user:work')")
+    public ResponseEntity<IdResponse> getAverageVoteFromSenderToRecipient(@PathVariable("senderId") long senderId,
+                                                                          @PathVariable("recipientId") long recipientId) {
+
+        return ResponseEntity.ok(profileService.getAverageVoteFromSenderToRecipient(senderId, recipientId));
     }
 }

@@ -259,7 +259,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -282,7 +281,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -305,7 +303,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -347,7 +344,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -368,7 +364,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -389,7 +384,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -449,7 +443,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -470,7 +463,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             long myId,
             double myLatitude,
             double myLongitude,
-            long additionalLanguageId,
             boolean isAuto,
             boolean isMultivacancyAllowed,
             int radius,
@@ -496,6 +488,184 @@ public interface UserRepository extends JpaRepository<User, Long> {
             int radius,
             Pageable pageable);
 
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltual ON ltual.language_id = :additionalLanguageId " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltual.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius)"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithAdditionalLanguage(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltual ON ltual.language_id = :additionalLanguageId " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltual.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
+            "ORDER BY u.name DESC"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithAdditionalLanguageSortedByName(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltual ON ltual.language_id = :additionalLanguageId " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltual.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
+            "ORDER BY u.ranking DESC"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithAdditionalLanguageSortedByRating(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltual ON ltual.language_id = :additionalLanguageId " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltual.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
+            "ORDER BY ST_Distance(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography ASC"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithAdditionalLanguageSortedByLocation(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltumy ON ltumy.user_id = :myId " +
+            "INNER JOIN languages_to_users ltue ON ltue.user_id = u.id AND ltumy.language_id = ltue.language_id " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltue.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius)"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactive(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltumy ON ltumy.user_id = :myId " +
+            "INNER JOIN languages_to_users ltue ON ltue.user_id = u.id AND ltumy.language_id = ltue.language_id " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltue.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
+            "ORDER BY u.name DESC"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactiveSortedByName(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltumy ON ltumy.user_id = :myId " +
+            "INNER JOIN languages_to_users ltue ON ltue.user_id = u.id AND ltumy.language_id = ltue.language_id " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed AND ltue.user_id = u.id " +
+            "AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
+            "ORDER BY u.ranking DESC"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactiveSortedByRating(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
+
+    @Query(value = "SELECT u FROM users u " +
+            "INNER JOIN employees_data ed ON ed.id = u.id " +
+            "INNER JOIN users_locations ul ON ul.user_id = u.id " +
+            "INNER JOIN professions_to_users ptu ON ptu.profession_id = :professionId " +
+            "INNER JOIN languages_to_users ltumy ON ltumy.user_id = :myId " +
+            "INNER JOIN languages_to_users ltue ON ltue.user_id = u.id AND ltumy.language_id = ltue.language_id " +
+            "WHERE u.is_blocked = false AND u.is_activated = true AND ed.is_auto = :isAuto AND " +
+            "ed.is_multivacancy_allowed = :isMultivacancyAllowed " +
+            "AND ltue.user_id = u.id AND ptu.employee_id = u.id AND NOT ed.status = 0 AND " +
+            "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
+            "ORDER BY ST_Distance(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography ASC"
+            , nativeQuery = true)
+    List<User> findAllEmployeesWithLanguagesMatchingAndIncludingTemporarilyInactiveSortedByLocation(
+            long professionId,
+            long myId,
+            double myLatitude,
+            double myLongitude,
+            long additionalLanguageId,
+            boolean isAuto,
+            boolean isMultivacancyAllowed,
+            int radius,
+            Pageable pageable);
 
     @Query(value = "SELECT u FROM users u " +
             "INNER JOIN employees_data ed ON ed.id = u.id " +
@@ -551,7 +721,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
             "ORDER BY u.ranking DESC"
             , nativeQuery = true)
-    List<User> findAllEmployeesWithAdditionalLanguageSortedByRating(
+    List<User> findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactiveSortedByRating(
             long professionId,
             long myId,
             double myLatitude,
@@ -573,7 +743,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "ST_DWithin(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography, :radius) " +
             "ORDER BY ST_Distance(ST_MakePoint(:myLongitude, :myLatitude)::geography, ST_MakePoint(ul.longitude, ul.latitude)::geography ASC"
             , nativeQuery = true)
-    List<User> findAllEmployeesWithAdditionalLanguageSortedByLocation(
+    List<User> findAllEmployeesWithAdditionalLanguageAndIncludingTemporarilyInactiveSortedByLocation(
             long professionId,
             long myId,
             double myLatitude,

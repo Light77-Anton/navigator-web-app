@@ -36,4 +36,8 @@ public class EmployerRequests {
     @MapsId
     @JoinColumn(name = "employer_id", nullable = false)
     private User employer;
+
+    @OneToOne(mappedBy = "employerRequests", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private RequestForCompanySetting requestForCompanySetting;
 }
